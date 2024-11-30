@@ -1,0 +1,36 @@
+import type {
+	Match,
+	MatchStats,
+	MatchTeam,
+	TeamChampionshipMatchesResponse,
+	TeamPlayer,
+	VoteHistory,
+} from './schemas';
+
+export interface MatchSummary {
+	teamWin?: boolean;
+	teamScore?: number;
+	opponentScore?: number;
+	opponent?: MatchTeam;
+	teamMapBans?: string[];
+}
+
+export interface MapSummary {
+	teamWin?: boolean;
+	mapName?: string;
+	teamScore?: number;
+	teamHalfScores?: [number, number];
+	teamPlayers?: TeamPlayer[];
+	opponentScore?: number;
+	opponentHalfScores?: [number, number];
+	opponentName?: string;
+}
+
+export interface MatchData {
+	championshipMatch: TeamChampionshipMatchesResponse['payload']['items'][number];
+	match?: Match;
+	stats?: MatchStats;
+	voteHistory?: VoteHistory;
+	summary: MatchSummary;
+	mapSummaries: MapSummary[];
+}
