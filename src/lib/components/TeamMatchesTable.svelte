@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { MatchData } from '$lib/types';
 	import TeamMapScores from './TeamMapScores.svelte';
+	import { assets } from '$app/paths';
 
 	export let matchesData: MatchData[];
 </script>
@@ -41,7 +42,8 @@
 							<span class="opponent-contents">
 								<img
 									class="team-avatar"
-									src={matchData.summary.opponent.avatar}
+									src={matchData.summary.opponent.avatar ||
+										`${assets}/placeholder.svg`}
 									alt=""
 								/>
 								<a href="/{matchData.summary.opponent.faction_id}">
@@ -73,7 +75,8 @@
 							<span class="opponent-contents">
 								<img
 									class="team-avatar"
-									src={matchData.summary.opponent.avatar}
+									src={matchData.summary.opponent.avatar ||
+										`${assets}/placeholder.svg`}
 									alt=""
 								/>
 								<a href="/{matchData.summary.opponent.faction_id}">
@@ -99,6 +102,12 @@
 
 	tr.ffw {
 		opacity: 0.5;
+	}
+
+	img {
+		width: 1rem;
+		height: 1rem;
+		border-radius: 50%;
 	}
 
 	th,
