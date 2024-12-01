@@ -4,11 +4,9 @@
 </script>
 
 <div class="map-scores" title="First half - Second half">
-	{#if halfScores}
-		<span class="half-scores">
-			{halfScores.join(' - ')}
-		</span>
-	{/if}
+	<span class="half-scores">
+		{halfScores?.join(' - ')}
+	</span>
 	{score}
 </div>
 
