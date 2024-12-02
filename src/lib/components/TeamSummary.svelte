@@ -83,9 +83,7 @@
 {#snippet mapWinRateSnippet({ value: mapCount, label: mapName }: { value: number; label: string })}
 	<span class="map-win-rate">
 		<span class="map-win-percentage" title="Win rate">
-			{trimTrailingZeroesAndDots(
-				(((mapWinCounts.get(mapName) ?? 0) / mapCount) * 100).toFixed(2)
-			)}% WR
+			{Math.round(((mapWinCounts.get(mapName) ?? 0) / mapCount) * 100)}% WR
 		</span>
 		<span class="map-play-count">
 			{mapCount}
