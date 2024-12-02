@@ -1,11 +1,15 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import PieChart from './PieChart.svelte';
 
 	export let series: number[], labels: string[];
-	export let showValue = false,
-		formatter = (value: number) => value;
+	export let showValue = false;
+	export let formatter = (value: number) => value;
+	export let renderLegendValue:
+		| Snippet<[{ value: number; label: string; index: number }]>
+		| undefined = undefined;
 	export let showTotal = false;
-	export let legendPosition = 'right';
+	export let legendPosition: 'right' | 'below' = 'right';
 	export let colors = [
 		'#008ffb',
 		'#00e396',
@@ -26,14 +30,23 @@
 <figure class:column={legendPosition === 'below'}>
 	<PieChart {series} {getColor} {colors} />
 	<figcaption class="legend">
-		<slot></slot>
 		<ol>
 			{#each labels as label, i}
 				<li style={`--label-color: ${getColor(i)}`}>
 					{#if showValue}
 						<div class="label-container">
 							<span class="label-label">{label}</span>
-							<span class="label-value">{formatter(series[i])}</span>
+							<span class="label-value">
+								{#if renderLegendValue}
+									{@render renderLegendValue({
+										value: series[i],
+										label,
+										index: i,
+									})}
+								{:else}
+									{formatter(series[i])}
+								{/if}
+							</span>
 						</div>
 					{:else}
 						{label}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Team, Member as TeamMember } from '$lib/schemas';
 	import type { MatchData } from '$lib/types';
+	import { trimTrailingZeroesAndDots } from '$lib/utils';
 	import PieFigure from '$lib/components/PieFigure.svelte';
 	import Member from '$lib/components/Member.svelte';
 	import TeamMatchesTable from '$lib/components/TeamMatchesTable.svelte';
@@ -20,9 +21,16 @@
 	}
 
 	const numMaps = matchData.reduce((acc, matchData) => acc + matchData.mapSummaries.length, 0);
+	const mapWinCounts = new Map<string, number>();
 
 	for (const data of matchData) {
 		for (const mapSummary of data.mapSummaries) {
+			if (mapSummary.mapName && mapSummary.teamWin) {
+				mapWinCounts.set(
+					mapSummary.mapName,
+					(mapWinCounts.get(mapSummary.mapName) ?? 0) + 1
+				);
+			}
 			if (mapSummary.teamPlayers) {
 				for (const player of mapSummary.teamPlayers) {
 					let val = playerMap.get(player.nickname);
@@ -72,6 +80,19 @@
 	);
 </script>
 
+{#snippet mapWinRateSnippet({ value: mapCount, label: mapName }: { value: number; label: string })}
+	<span class="map-win-rate">
+		<span class="map-win-percentage" title="Win rate">
+			{trimTrailingZeroesAndDots(
+				(((mapWinCounts.get(mapName) ?? 0) / mapCount) * 100).toFixed(2)
+			)}% WR
+		</span>
+		<span class="map-play-count">
+			{mapCount}
+		</span>
+	</span>
+{/snippet}
+
 <section>
 	<header>
 		<img src={team.avatar || `${assets}/placeholder.svg`} alt="{team.name} avatar" />
@@ -95,6 +116,8 @@
 			<PieFigure
 				series={playedCounts.map((c) => c.count)}
 				labels={playedCounts.map((c) => c.name)}
+				renderLegendValue={mapWinRateSnippet}
+				legendPosition="below"
 				showValue
 			/>
 		</div>
@@ -104,6 +127,7 @@
 			<PieFigure
 				series={ban1Counts.map((c) => c.count)}
 				labels={ban1Counts.map((c) => c.name)}
+				legendPosition="below"
 				showValue
 			/>
 		</div>
@@ -113,6 +137,7 @@
 			<PieFigure
 				series={ban2Counts.map((c) => c.count)}
 				labels={ban2Counts.map((c) => c.name)}
+				legendPosition="below"
 				showValue
 			/>
 		</div>
@@ -122,6 +147,7 @@
 			<PieFigure
 				series={ban3Counts.map((c) => c.count)}
 				labels={ban3Counts.map((c) => c.name)}
+				legendPosition="below"
 				showValue
 			/>
 		</div>
@@ -171,9 +197,22 @@
 		border-radius: 2px;
 		text-align: center;
 		padding: 1rem;
+		width: 20rem;
 	}
 
 	.figure-heading {
 		font-size: 1.2rem;
+	}
+
+	.map-win-rate {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.map-win-percentage {
+		font-size: 0.75rem;
+		text-align: left;
 	}
 </style>
