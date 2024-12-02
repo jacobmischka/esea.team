@@ -189,6 +189,8 @@
 
 	.charts {
 		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 		gap: 2rem;
 	}
 
@@ -197,7 +199,7 @@
 		border-radius: 2px;
 		text-align: center;
 		padding: 1rem;
-		width: 20rem;
+		width: 12rem;
 	}
 
 	.figure-heading {
