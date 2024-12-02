@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Team, Member as TeamMember } from '$lib/schemas';
 	import type { MatchData } from '$lib/types';
-	import { trimTrailingZeroesAndDots } from '$lib/utils';
 	import PieFigure from '$lib/components/PieFigure.svelte';
 	import Member from '$lib/components/Member.svelte';
 	import TeamMatchesTable from '$lib/components/TeamMatchesTable.svelte';
