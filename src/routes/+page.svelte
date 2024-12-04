@@ -14,9 +14,15 @@
 		<h1>ESEA.Team</h1>
 	</header>
 
+	<p>
+		Navigate to a team's page on FACEIT and change
+		<code>www.faceit.com/en/teams</code> →
+		<code>esea.team</code> in your address bar.
+	</p>
+
 	<form on:submit={handleSubmit}>
 		<label>
-			Paste a team's ID from FACEIT
+			Or paste a team's ID from FACEIT
 			<input
 				type="text"
 				name="teamID"
@@ -33,12 +39,21 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		gap: 3rem;
+		align-items: center;
+		gap: 5rem;
 		min-height: 80vh;
 	}
 
-	header {
-		margin: 2rem;
+	p {
+		font-size: 1.1rem;
+	}
+
+	code {
+		font-size: 1.1rem;
+		padding: 0 0.35rem;
+		background-color: #333;
+		border: 1px solid #444;
+		border-radius: 2px;
 	}
 
 	h1 {
