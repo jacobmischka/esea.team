@@ -24,7 +24,19 @@
 			{#each matchData.mapSummaries as mapSummary, i}
 				<tr>
 					<td data-win={mapSummary.teamWin}>{mapSummary.teamWin ? 'W' : 'L'}</td>
-					<td>{mapSummary.mapName}</td>
+					<td>
+						{#if matchData.match}
+							<a
+								href="https://www.faceit.com/en/cs2/room/{matchData.match.match_id}"
+								target="_blank"
+								rel="noreferrer noopener"
+							>
+								{mapSummary.mapName}
+							</a>
+						{:else}
+							{mapSummary.mapName}
+						{/if}
+					</td>
 					<td class="numeric">
 						<TeamMapScores
 							score={mapSummary.teamScore}
@@ -46,7 +58,11 @@
 										`${assets}/placeholder.svg`}
 									alt=""
 								/>
-								<a href="/{matchData.summary.opponent.faction_id}">
+								<a
+									href="/{matchData.summary.opponent.faction_id}"
+									target="_blank"
+									rel="noreferrer noopener"
+								>
 									{matchData.summary.opponent.name}
 								</a>
 							</span>
@@ -67,7 +83,19 @@
 					<td data-win={matchData.summary.teamWin}
 						>{matchData.summary.teamWin ? 'W' : 'L'}</td
 					>
-					<td>FFW</td>
+					<td>
+						{#if matchData.match}
+							<a
+								href="https://www.faceit.com/en/cs2/room/{matchData.match.match_id}"
+								target="_blank"
+								rel="noreferrer noopener"
+							>
+								FFW
+							</a>
+						{:else}
+							FFW
+						{/if}
+					</td>
 					<td class="numeric"></td>
 					<td class="numeric"></td>
 					<td>
@@ -79,7 +107,11 @@
 										`${assets}/placeholder.svg`}
 									alt=""
 								/>
-								<a href="/{matchData.summary.opponent.faction_id}">
+								<a
+									href="/{matchData.summary.opponent.faction_id}"
+									target="_blank"
+									rel="noreferrer noopener"
+								>
 									{matchData.summary.opponent.name}
 								</a>
 							</span>

@@ -96,7 +96,13 @@
 
 		<h1>{team.name}</h1>
 
-		<a href="https://www.faceit.com/en/teams/{team.team_id}">FACEIT</a>
+		<a
+			href="https://www.faceit.com/en/teams/{team.team_id}"
+			target="_blank"
+			rel="noreferrer noopener"
+		>
+			FACEIT
+		</a>
 	</header>
 
 	<div class="members">

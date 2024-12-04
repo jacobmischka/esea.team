@@ -12,7 +12,12 @@
 	<img src={member.avatar || `${assets}/avatar.svg`} alt="" />
 	<div class="member-info">
 		{#if member.faceit_url}
-			<a class="name" href={replaceLang(member.faceit_url)}>
+			<a
+				class="name"
+				href={replaceLang(member.faceit_url)}
+				target="_blank"
+				rel="noreferrer noopener"
+			>
 				{member.nickname}
 			</a>
 		{:else}
