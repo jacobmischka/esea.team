@@ -16,7 +16,7 @@
 	</header>
 
 	<p>
-		Navigate to a team's page on FACEIT and change
+		Navigate to a team's overview page on FACEIT and change
 		<code>www.faceit.com/en/teams</code> →
 		<code>esea.team</code> in your address bar.
 	</p>
