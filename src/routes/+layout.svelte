@@ -8,7 +8,12 @@
 	</main>
 
 	<footer>
-		<a href="https://github.com/jacobmischka/esea.team" aria-label="GitHub source link">
+		<a
+			href="https://github.com/jacobmischka/esea.team"
+			aria-label="GitHub source link"
+			target="_blank"
+			rel="noreferrer noopener"
+		>
 			<svg
 				class="octicon octicon-mark-github"
 				viewBox="0 0 16 16"
