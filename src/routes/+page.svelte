@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { navigating } from '$app/stores';
 	import { goto } from '$app/navigation';
 
 	function handleSubmit(event: SubmitEvent) {
@@ -30,7 +31,12 @@
 				placeholder="00000000-0000-0000-0000-000000000000"
 			/>
 		</label>
-		<button type="submit">Submit</button>
+
+		{#if $navigating}
+			<button type="submit" disabled>Loading...</button>
+		{:else}
+			<button type="submit">Submit</button>
+		{/if}
 	</form>
 </section>
 

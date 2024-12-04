@@ -1,15 +1,20 @@
 import type { PageServerLoad } from './$types';
 import { ESEA_LEAGUE_ID, UnofficialFaceitClient } from '$lib/faceit';
 
-export const load: PageServerLoad = async ({ fetch, params }) => {
+export const load: PageServerLoad = async ({ fetch, url, params }) => {
 	const client = new UnofficialFaceitClient(fetch);
 
 	const leagueSummary = await client.teamLeagueSummary(params.teamID);
 
+	const eseaLeague = leagueSummary.payload.find((league) => league.league_id === ESEA_LEAGUE_ID);
+	const eseaSeasons = eseaLeague?.league_seasons_info ?? [];
+	const seasonID = url.searchParams.get('season_id');
+	const season = seasonID
+		? eseaSeasons.find((season) => season.season_id === seasonID)
+		: eseaSeasons[0];
+
 	const latestESEAChampionships =
-		leagueSummary.payload
-			.find((league) => league.league_id === ESEA_LEAGUE_ID)
-			?.league_seasons_info[0]?.season_standings?.map((stage) => stage.championship_id) ?? [];
+		season?.season_standings?.map((stage) => stage.championship_id) ?? [];
 
 	const matchesResponse = await client.teamChampionshipMatches(
 		params.teamID,
@@ -30,5 +35,5 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			}
 		})
 	);
-	return { matchesResponse, matchIDs, voteHistories };
+	return { eseaSeasons, season, matchesResponse, matchIDs, voteHistories };
 };

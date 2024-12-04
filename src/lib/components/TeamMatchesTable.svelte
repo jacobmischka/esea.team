@@ -129,7 +129,7 @@
 <style>
 	table {
 		border-collapse: collapse;
-		margin: 2rem auto;
+		width: 100%;
 	}
 
 	tr.ffw {

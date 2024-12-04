@@ -1,17 +1,20 @@
 <script lang="ts">
-	import type { Team, Member as TeamMember } from '$lib/schemas';
+	import type { Team, LeagueSeason, Member as TeamMember } from '$lib/schemas';
 	import type { MatchData } from '$lib/types';
 	import PieFigure from '$lib/components/PieFigure.svelte';
 	import Member from '$lib/components/Member.svelte';
 	import TeamMatchesTable from '$lib/components/TeamMatchesTable.svelte';
 	import { assets } from '$app/paths';
 	import { dev } from '$app/environment';
+	import { goto } from '$app/navigation';
 
 	export let matchData: MatchData[];
 	export let team: Team;
+	export let seasons: LeagueSeason[];
+	export let season: LeagueSeason | undefined = undefined;
 
 	if (dev) {
-		console.debug({ matchData, team });
+		console.debug({ matchData, team, seasons, season });
 	}
 
 	const playerMap = new Map<string, { member: TeamMember; count: number }>();
@@ -21,6 +24,16 @@
 
 	const numMaps = matchData.reduce((acc, matchData) => acc + matchData.mapSummaries.length, 0);
 	const mapWinCounts = new Map<string, number>();
+
+	async function handleSeasonChange(
+		event: Event & {
+			currentTarget: HTMLSelectElement;
+		}
+	) {
+		const url = new URL(window.location.href);
+		url.searchParams.set('season_id', event.currentTarget.value);
+		return goto(url);
+	}
 
 	for (const data of matchData) {
 		for (const mapSummary of data.mapSummaries) {
@@ -90,7 +103,7 @@
 	</span>
 {/snippet}
 
-<section>
+<section class="team-summary">
 	<header>
 		<img src={team.avatar || `${assets}/placeholder.svg`} alt="{team.name} avatar" />
 
@@ -105,15 +118,28 @@
 		</a>
 	</header>
 
-	<div class="members">
+	<section class="members">
 		{#each sortedPlayers as { count, member }}
 			<Member {member} {count} percentage={Math.round((count / numMaps) * 100)} />
 		{/each}
-	</div>
+	</section>
 
-	<TeamMatchesTable matchesData={matchData} />
+	<section class="season">
+		{#if season}
+			<h2>
+				Season
+				<select value={season.season_id} on:change={handleSeasonChange}>
+					{#each seasons as s}
+						<option value={s.season_id}>{s.season_number}</option>
+					{/each}
+				</select>
+			</h2>
+		{/if}
 
-	<div class="charts">
+		<TeamMatchesTable matchesData={matchData} />
+	</section>
+
+	<section class="charts">
 		<div class="chart-container">
 			<span class="figure-heading"> Maps played </span>
 			<PieFigure
@@ -154,7 +180,7 @@
 				showValue
 			/>
 		</div>
-	</div>
+	</section>
 </section>
 
 <style>
@@ -162,7 +188,7 @@
 		font-size: 1.25rem;
 	}
 
-	section {
+	.team-summary {
 		margin: 0 6rem;
 		padding: 1rem;
 	}
@@ -188,6 +214,14 @@
 		gap: 0.5rem;
 		margin: 0 auto;
 		width: 100%;
+	}
+
+	.season {
+		margin: 2em auto;
+	}
+
+	.season h2 {
+		line-height: 1rem;
 	}
 
 	.charts {

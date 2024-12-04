@@ -7,10 +7,9 @@ import { PUBLIC_FACEIT_CLIENT_API_KEY } from '$env/static/public';
 export const load: PageLoad = async ({ fetch, params, data }) => {
 	const client = new APIFaceitClient(fetch, PUBLIC_FACEIT_CLIENT_API_KEY);
 	const team = await client.team(params.teamID);
+	const { matchIDs, matchesResponse, eseaSeasons, season } = data;
 
 	const getMatchData = async () => {
-		const { matchIDs, matchesResponse } = data;
-
 		const matches = await Promise.all(matchIDs.map((matchID) => client.match(matchID)));
 		const matchStats = await Promise.all(
 			matchIDs.map(async (matchID) => {
@@ -129,5 +128,5 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 			.filter((data) => data !== undefined);
 	};
 
-	return { team, matchData: getMatchData(), matchIDs: data.matchIDs };
+	return { team, matchData: getMatchData(), matchIDs, eseaSeasons, season };
 };

@@ -203,25 +203,26 @@ export const TeamChampionshipMatchesResponse = z.object({
 });
 export type TeamChampionshipMatchesResponse = z.infer<typeof TeamChampionshipMatchesResponse>;
 
+export const LeagueSeason = z.object({
+	season_number: z.coerce.number(),
+	season_id: z.string(),
+	season_standings: z.array(
+		z.object({
+			stage_id: z.string(),
+			stage_name: z.string(),
+			championship_id: z.string(),
+		})
+	),
+});
+export type LeagueSeason = z.infer<typeof LeagueSeason>;
+
 export const TeamLeaugeSummary = z.object({
 	payload: z.array(
 		z.object({
 			league_name: z.string(),
 			league_id: z.string(),
 			game_id: z.string(),
-			league_seasons_info: z.array(
-				z.object({
-					season_number: z.coerce.number(),
-					season_id: z.string(),
-					season_standings: z.array(
-						z.object({
-							stage_id: z.string(),
-							stage_name: z.string(),
-							championship_id: z.string(),
-						})
-					),
-				})
-			),
+			league_seasons_info: z.array(LeagueSeason),
 		})
 	),
 });
