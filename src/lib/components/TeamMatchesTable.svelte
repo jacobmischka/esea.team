@@ -14,14 +14,14 @@
 			<th class="numeric">Team score</th>
 			<th class="numeric">Opponent score</th>
 			<th>Opponent</th>
-			<th>Team ban 1</th>
-			<th>Team ban 2</th>
-			<th>Team ban 3</th>
+			<th>Map ban 1</th>
+			<th>Map ban 2</th>
+			<th>Map ban 3</th>
 		</tr>
 	</thead>
 	<tbody>
 		{#each matchesData as matchData}
-			{#each matchData.mapSummaries as mapSummary, i}
+			{#each matchData.mapSummaries as mapSummary, mapSummaryIndex}
 				<tr>
 					<td data-win={mapSummary.teamWin}>{mapSummary.teamWin ? 'W' : 'L'}</td>
 					<td>
@@ -68,15 +68,26 @@
 							</span>
 						{/if}
 					</td>
-					{#if i === 0}
-						<td>{matchData.summary.teamMapBans?.[0]}</td>
-						<td>{matchData.summary.teamMapBans?.[1]}</td>
-						<td>{matchData.summary.teamMapBans?.[2]}</td>
-					{:else}
-						<td></td>
-						<td></td>
-						<td></td>
-					{/if}
+					{#each [0, 1, 2] as mapIndex}
+						{#if mapSummaryIndex === 0}
+							<td>
+								<div class="map-ban-cell">
+									<span
+										class="map-ban"
+										data-team={matchData.summary.mapBans[mapIndex * 2].team}
+										>{matchData.summary.mapBans?.[mapIndex * 2].map}</span
+									>
+									<span
+										class="map-ban"
+										data-team={matchData.summary.mapBans[mapIndex * 2 + 1].team}
+										>{matchData.summary.mapBans?.[mapIndex * 2 + 1].map}</span
+									>
+								</div>
+							</td>
+						{:else}
+							<td></td>
+						{/if}
+					{/each}
 				</tr>
 			{:else}
 				<tr class="ffw">
@@ -156,6 +167,20 @@
 		font-weight: 600;
 		text-align: left;
 		padding: 0.5rem;
+	}
+
+	.map-ban-cell {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.map-ban-cell .map-ban[data-team='opponent'] {
+		font-size: 0.7rem;
+	}
+
+	.map-ban-cell .map-ban[data-team='opponent']::before {
+		content: 'Opponent: ';
 	}
 
 	.opponent-contents {

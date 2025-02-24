@@ -7,11 +7,17 @@ import type {
 	VoteHistory,
 } from './schemas';
 
+export interface MapBan {
+	team: 'team' | 'opponent';
+	map: string;
+}
+
 export interface MatchSummary {
 	teamWin?: boolean;
 	teamScore?: number;
 	opponentScore?: number;
 	opponent?: MatchTeam;
+	mapBans?: MapBan[];
 	teamMapBans?: string[];
 }
 
