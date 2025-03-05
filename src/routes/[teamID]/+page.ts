@@ -10,16 +10,18 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 	const { matchIDs, matchesResponse, eseaSeasons, season } = data;
 
 	const getMatchData = async () => {
-		const matches = await Promise.all(matchIDs.map((matchID) => client.match(matchID)));
-		const matchStats = await Promise.all(
-			matchIDs.map(async (matchID) => {
-				try {
-					return [matchID, await client.matchStats(matchID)] as const;
-				} catch {
-					return [matchID, null] as const;
-				}
-			})
-		);
+		const [matches, matchStats] = await Promise.all([
+			Promise.all(matchIDs.map((matchID) => client.match(matchID))),
+			Promise.all(
+				matchIDs.map(async (matchID) => {
+					try {
+						return [matchID, await client.matchStats(matchID)] as const;
+					} catch {
+						return [matchID, null] as const;
+					}
+				})
+			),
+		]);
 
 		const matchDataMap = new Map<string, MatchData>();
 		for (const championshipMatch of matchesResponse.payload.items) {
