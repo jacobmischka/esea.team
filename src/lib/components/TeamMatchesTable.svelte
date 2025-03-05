@@ -74,14 +74,14 @@
 								<div class="map-ban-cell">
 									<span
 										class="map-ban"
-										data-team={matchData.summary.mapBans?.[mapIndex * 2].team}
-										>{matchData.summary.mapBans?.[mapIndex * 2].map}</span
+										data-team={matchData.summary.mapBans?.[mapIndex * 2]?.team}
+										>{matchData.summary.mapBans?.[mapIndex * 2]?.map}</span
 									>
 									<span
 										class="map-ban"
 										data-team={matchData.summary.mapBans?.[mapIndex * 2 + 1]
-											.team}
-										>{matchData.summary.mapBans?.[mapIndex * 2 + 1].map}</span
+											?.team}
+										>{matchData.summary.mapBans?.[mapIndex * 2 + 1]?.map}</span
 									>
 								</div>
 							</td>
