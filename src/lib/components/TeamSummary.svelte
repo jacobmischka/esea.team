@@ -8,10 +8,17 @@
 	import { dev } from '$app/environment';
 	import { goto } from '$app/navigation';
 
-	export let matchData: MatchData[];
-	export let team: Team;
-	export let seasons: LeagueSeason[];
-	export let season: LeagueSeason | undefined = undefined;
+	const {
+		matchData,
+		team,
+		seasons,
+		season,
+	}: {
+		matchData: MatchData[];
+		team: Team;
+		seasons: LeagueSeason[];
+		season?: LeagueSeason | undefined;
+	} = $props();
 
 	if (dev) {
 		console.debug({ matchData, team, seasons, season });
@@ -128,7 +135,7 @@
 		{#if season}
 			<h2>
 				Season
-				<select value={season.season_id} on:change={handleSeasonChange}>
+				<select value={season.season_id} onchange={handleSeasonChange}>
 					{#each seasons as s}
 						<option value={s.season_id}>{s.season_number}</option>
 					{/each}

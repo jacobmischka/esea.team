@@ -3,9 +3,15 @@
 	import { replaceLang } from '$lib/utils';
 	import { assets } from '$app/paths';
 
-	export let member: Member;
-	export let count: number | undefined = undefined;
-	export let percentage: number | undefined = undefined;
+	const {
+		member,
+		count,
+		percentage,
+	}: {
+		member: Member;
+		count?: number | undefined;
+		percentage?: number | undefined;
+	} = $props();
 </script>
 
 <div class="member">

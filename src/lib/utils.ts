@@ -5,3 +5,7 @@ export function replaceLang(url: string) {
 export function trimTrailingZeroesAndDots(numStr: string): string {
 	return numStr.replace(/\.?0+$/, '');
 }
+
+export function ucfirst(str: string): string {
+	return str.charAt(0).toUpperCase() + str.substring(1);
+}

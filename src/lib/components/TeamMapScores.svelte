@@ -1,6 +1,11 @@
 <script lang="ts">
-	export let score: number | undefined = undefined;
-	export let halfScores: [number, number] | undefined = undefined;
+	const {
+		score,
+		halfScores,
+	}: {
+		score?: number | undefined;
+		halfScores?: [number, number] | undefined;
+	} = $props();
 </script>
 
 <div class="map-scores" title="First half - Second half">

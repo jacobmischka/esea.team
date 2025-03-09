@@ -30,6 +30,7 @@
 	},
 	"dependencies": {
 		"@vercel/analytics": "^1.4.1",
+		"export-to-csv": "^1.4.0",
 		"zod": "^3.23.8"
 	}
 }

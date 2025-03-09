@@ -2,9 +2,111 @@
 	import type { MatchData } from '$lib/types';
 	import TeamMapScores from './TeamMapScores.svelte';
 	import { assets } from '$app/paths';
+	import { ucfirst } from '../utils';
 
-	export let matchesData: MatchData[];
+	import { mkConfig, generateCsv, download } from 'export-to-csv';
+
+	const { matchesData }: { matchesData: MatchData[] } = $props();
+
+	const csvConfig = mkConfig({
+		filename: 'ESEA team match summary',
+		columnHeaders: [
+			{
+				key: 'winLoss',
+				displayLabel: 'W / L',
+			},
+			{
+				key: 'mapName',
+				displayLabel: 'Map',
+			},
+			{
+				key: 'teamScore',
+				displayLabel: 'Team score',
+			},
+			{
+				key: 'teamHalfScores',
+				displayLabel: 'Team half scores',
+			},
+			{
+				key: 'opponentScore',
+				displayLabel: 'Opponent score',
+			},
+			{
+				key: 'opponentHalfScores',
+				displayLabel: 'Opponent half scores',
+			},
+			{
+				key: 'opponentName',
+				displayLabel: 'Opponent',
+			},
+			...Array.from({ length: 6 }, (_, i) => i + 1).map((mapIndex) => ({
+				key: `mapBan${mapIndex}`,
+				displayLabel: `Map ban ${mapIndex}`,
+			})),
+		],
+	});
+
+	const generateCSV = generateCsv(csvConfig);
+	const downloadCSV = download(csvConfig);
+
+	const csvData = $derived(
+		matchesData.flatMap((matchData) =>
+			matchData.mapSummaries.length
+				? matchData.mapSummaries.map((mapSummary) => ({
+						winLoss: mapSummary.teamWin ? 'W' : 'L',
+						mapName: mapSummary.mapName,
+						teamScore: mapSummary.teamScore,
+						teamHalfScores: mapSummary.teamHalfScores?.join(' - '),
+						opponentName: mapSummary.opponentName,
+						opponentScore: mapSummary.opponentScore,
+						opponentHalfScores: mapSummary.opponentHalfScores?.join(' - '),
+						...Object.fromEntries(
+							matchData.summary.mapBans?.map((mapBan, mapIndex) => [
+								`mapBan${mapIndex + 1}`,
+								`${ucfirst(mapBan.team)}: ${mapBan.map}`,
+							]) ?? []
+						),
+					}))
+				: [
+						{
+							winLoss: matchData.summary.teamWin ? 'W' : 'L',
+							opponentName: matchData.summary.opponent?.name,
+						},
+					]
+		)
+	);
+
+	const mapsSummaryText = $derived(
+		encodeURI(
+			matchesData
+				.map((matchData) =>
+					matchData.mapSummaries.length
+						? `${matchData.mapSummaries.map((mapSummary) => mapSummary.mapName).join(', ')} - ${matchData.summary.mapBans?.length ? `Banned ${matchData.summary.mapBans?.[0].team === 'team' ? 'first' : 'second'}; ${matchData.summary.teamMapBans?.join(', ')}` : 'Bans unavailable'}`
+						: 'No map data, likely FF'
+				)
+				.join('\n')
+		)
+	);
 </script>
+
+<div class="table-controls">
+	<a
+		class="download-map-summary"
+		download="ESEA team map summary.txt"
+		href={`data:text/plain,${mapsSummaryText}`}
+	>
+		Download team maps summary
+	</a>
+
+	<button
+		type="button"
+		onclick={() => {
+			downloadCSV(generateCSV(csvData));
+		}}
+	>
+		Download as CSV
+	</button>
+</div>
 
 <table>
 	<thead>
@@ -139,6 +241,18 @@
 </table>
 
 <style>
+	.table-controls {
+		display: flex;
+		gap: 1rem;
+		justify-content: flex-end;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.download-map-summary {
+		font-size: 0.8rem;
+	}
+
 	table {
 		border-collapse: collapse;
 		width: 100%;
