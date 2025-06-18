@@ -108,137 +108,143 @@
 	</button>
 </div>
 
-<table>
-	<thead>
-		<tr>
-			<th>W / L</th>
-			<th>Map</th>
-			<th class="numeric">Team score</th>
-			<th class="numeric">Opponent score</th>
-			<th>Opponent</th>
-			<th>Map ban 1</th>
-			<th>Map ban 2</th>
-			<th>Map ban 3</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each matchesData as matchData}
-			{#each matchData.mapSummaries as mapSummary, mapSummaryIndex}
-				<tr>
-					<td data-win={mapSummary.teamWin}>{mapSummary.teamWin ? 'W' : 'L'}</td>
-					<td>
-						{#if matchData.match}
-							<a
-								href="https://www.faceit.com/en/cs2/room/{matchData.match.match_id}"
-								target="_blank"
-								rel="noreferrer noopener"
-							>
+<div class="table-container">
+	<table>
+		<thead>
+			<tr>
+				<th>W / L</th>
+				<th>Map</th>
+				<th class="numeric">Team score</th>
+				<th class="numeric">Opponent score</th>
+				<th>Opponent</th>
+				<th>Map ban 1</th>
+				<th>Map ban 2</th>
+				<th>Map ban 3</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each matchesData as matchData}
+				{#each matchData.mapSummaries as mapSummary, mapSummaryIndex}
+					<tr>
+						<td data-win={mapSummary.teamWin}>{mapSummary.teamWin ? 'W' : 'L'}</td>
+						<td>
+							{#if matchData.match}
+								<a
+									href="https://www.faceit.com/en/cs2/room/{matchData.match
+										.match_id}"
+									target="_blank"
+									rel="noreferrer noopener"
+								>
+									{mapSummary.mapName}
+								</a>
+							{:else}
 								{mapSummary.mapName}
-							</a>
-						{:else}
-							{mapSummary.mapName}
-						{/if}
-					</td>
-					<td class="numeric">
-						<TeamMapScores
-							score={mapSummary.teamScore}
-							halfScores={mapSummary.teamHalfScores}
-						/>
-					</td>
-					<td class="numeric">
-						<TeamMapScores
-							score={mapSummary.opponentScore}
-							halfScores={mapSummary.opponentHalfScores}
-						/>
-					</td>
-					<td>
-						{#if matchData.summary.opponent}
-							<span class="opponent-contents">
-								<img
-									class="team-avatar"
-									src={matchData.summary.opponent.avatar ||
-										`${assets}/placeholder.svg`}
-									alt=""
-								/>
+							{/if}
+						</td>
+						<td class="numeric">
+							<TeamMapScores
+								score={mapSummary.teamScore}
+								halfScores={mapSummary.teamHalfScores}
+							/>
+						</td>
+						<td class="numeric">
+							<TeamMapScores
+								score={mapSummary.opponentScore}
+								halfScores={mapSummary.opponentHalfScores}
+							/>
+						</td>
+						<td>
+							{#if matchData.summary.opponent}
+								<span class="opponent-contents">
+									<img
+										class="team-avatar"
+										src={matchData.summary.opponent.avatar ||
+											`${assets}/placeholder.svg`}
+										alt=""
+									/>
+									<a
+										href="/{matchData.summary.opponent.faction_id}"
+										target="_blank"
+										rel="noreferrer noopener"
+									>
+										{matchData.summary.opponent.name}
+									</a>
+								</span>
+							{/if}
+						</td>
+						{#each [0, 1, 2] as mapIndex}
+							{#if mapSummaryIndex === 0}
+								<td>
+									<div class="map-ban-cell">
+										<span
+											class="map-ban"
+											data-team={matchData.summary.mapBans?.[mapIndex * 2]
+												?.team}
+											>{matchData.summary.mapBans?.[mapIndex * 2]?.map}</span
+										>
+										<span
+											class="map-ban"
+											data-team={matchData.summary.mapBans?.[mapIndex * 2 + 1]
+												?.team}
+											>{matchData.summary.mapBans?.[mapIndex * 2 + 1]
+												?.map}</span
+										>
+									</div>
+								</td>
+							{:else}
+								<td></td>
+							{/if}
+						{/each}
+					</tr>
+				{:else}
+					<tr class="ffw">
+						<td data-win={matchData.summary.teamWin}
+							>{matchData.summary.teamWin ? 'W' : 'L'}</td
+						>
+						<td>
+							{#if matchData.match}
 								<a
-									href="/{matchData.summary.opponent.faction_id}"
+									href="https://www.faceit.com/en/cs2/room/{matchData.match
+										.match_id}"
 									target="_blank"
 									rel="noreferrer noopener"
 								>
-									{matchData.summary.opponent.name}
+									FFW
 								</a>
-							</span>
-						{/if}
-					</td>
-					{#each [0, 1, 2] as mapIndex}
-						{#if mapSummaryIndex === 0}
-							<td>
-								<div class="map-ban-cell">
-									<span
-										class="map-ban"
-										data-team={matchData.summary.mapBans?.[mapIndex * 2]?.team}
-										>{matchData.summary.mapBans?.[mapIndex * 2]?.map}</span
-									>
-									<span
-										class="map-ban"
-										data-team={matchData.summary.mapBans?.[mapIndex * 2 + 1]
-											?.team}
-										>{matchData.summary.mapBans?.[mapIndex * 2 + 1]?.map}</span
-									>
-								</div>
-							</td>
-						{:else}
-							<td></td>
-						{/if}
-					{/each}
-				</tr>
-			{:else}
-				<tr class="ffw">
-					<td data-win={matchData.summary.teamWin}
-						>{matchData.summary.teamWin ? 'W' : 'L'}</td
-					>
-					<td>
-						{#if matchData.match}
-							<a
-								href="https://www.faceit.com/en/cs2/room/{matchData.match.match_id}"
-								target="_blank"
-								rel="noreferrer noopener"
-							>
+							{:else}
 								FFW
-							</a>
-						{:else}
-							FFW
-						{/if}
-					</td>
-					<td class="numeric"></td>
-					<td class="numeric"></td>
-					<td>
-						{#if matchData.summary.opponent}
-							<span class="opponent-contents">
-								<img
-									class="team-avatar"
-									src={matchData.summary.opponent.avatar ||
-										`${assets}/placeholder.svg`}
-									alt=""
-								/>
-								<a
-									href="/{matchData.summary.opponent.faction_id}"
-									target="_blank"
-									rel="noreferrer noopener"
-								>
-									{matchData.summary.opponent.name}
-								</a>
-							</span>
-						{/if}
-					</td>
-					<td></td>
-					<td></td>
-					<td></td>
-				</tr>
+							{/if}
+						</td>
+						<td class="numeric"></td>
+						<td class="numeric"></td>
+						<td>
+							{#if matchData.summary.opponent}
+								<span class="opponent-contents">
+									<img
+										class="team-avatar"
+										src={matchData.summary.opponent.avatar ||
+											`${assets}/placeholder.svg`}
+										alt=""
+									/>
+									<a
+										href="/{matchData.summary.opponent.faction_id}"
+										target="_blank"
+										rel="noreferrer noopener"
+									>
+										{matchData.summary.opponent.name}
+									</a>
+								</span>
+							{/if}
+						</td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+				{/each}
 			{/each}
-		{/each}
-	</tbody>
-</table>
+		</tbody>
+	</table>
+</div>
 
 <style>
 	.table-controls {
@@ -253,6 +259,18 @@
 		font-size: 0.8rem;
 	}
 
+	img {
+		width: 1rem;
+		height: 1rem;
+		border-radius: 50%;
+	}
+
+	.table-container {
+		max-width: 100%;
+		overflow: auto;
+		border: 1px solid var(--border-color);
+	}
+
 	table {
 		border-collapse: collapse;
 		width: 100%;
@@ -260,12 +278,6 @@
 
 	tr.ffw {
 		opacity: 0.5;
-	}
-
-	img {
-		width: 1rem;
-		height: 1rem;
-		border-radius: 50%;
 	}
 
 	th,
@@ -282,6 +294,26 @@
 		font-weight: 600;
 		text-align: left;
 		padding: 0.5rem;
+	}
+
+	tr:first-child th,
+	tr:first-child td {
+		border-top: none;
+	}
+
+	tr:last-child th,
+	tr:last-child td {
+		border-bottom: none;
+	}
+
+	th:first-child,
+	td:first-child {
+		border-left: none;
+	}
+
+	th:last-child,
+	td:last-child {
+		border-right: none;
 	}
 
 	.map-ban-cell {

@@ -36,6 +36,14 @@
 		--background-color: #121212;
 		--text-color: #f1f1f1;
 		--border-color: #333;
+
+		--app-margin: 0 1rem;
+	}
+
+	@media (min-width: 800px) {
+		:global(:root) {
+			--app-margin: 0 4rem;
+		}
 	}
 
 	:global(html) {

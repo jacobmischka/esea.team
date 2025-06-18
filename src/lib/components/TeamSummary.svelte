@@ -196,7 +196,7 @@
 	}
 
 	.team-summary {
-		margin: 0 6rem;
+		margin: var(--app-margin);
 		padding: 1rem;
 	}
 
