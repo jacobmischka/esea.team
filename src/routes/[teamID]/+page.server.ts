@@ -1,8 +1,15 @@
+import { error } from '@sveltejs/kit';
+
 import type { PageServerLoad } from './$types';
 import { ESEA_LEAGUE_ID, UnofficialFaceitClient } from '$lib/faceit';
+import { matchIDRegex } from '$lib/constants';
 
 export const load: PageServerLoad = async ({ fetch, url, params }) => {
 	const client = new UnofficialFaceitClient(fetch);
+
+	if (matchIDRegex.test(params.teamID)) {
+		return error(400, { message: 'Match ID provided, please provide a team ID instead.' });
+	}
 
 	const leagueSummary = await client.teamLeagueSummary(params.teamID);
 
