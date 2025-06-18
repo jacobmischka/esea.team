@@ -1,10 +1,13 @@
 <script lang="ts">
-	import type { MatchData } from '$lib/types';
-	import TeamMapScores from './TeamMapScores.svelte';
-	import { assets } from '$app/paths';
-	import { ucfirst } from '../utils';
-
 	import { mkConfig, generateCsv, download } from 'export-to-csv';
+
+	import type { MatchData } from '$lib/types';
+	import { assets } from '$app/paths';
+	import { page } from '$app/stores';
+
+	import TeamMapScores from './TeamMapScores.svelte';
+	import { ucfirst } from '../utils';
+	import { pushState } from '$app/navigation';
 
 	const { matchesData }: { matchesData: MatchData[] } = $props();
 
@@ -87,9 +90,32 @@
 				.join('\n')
 		)
 	);
+
+	const hasNotes = $derived(matchesData.some((match) => Boolean(match.notes?.length)));
+
+	let showPlayers = $state(Boolean($page.url.searchParams.get('show_players')));
+
+	async function handleShowPlayersChange(
+		event: Event & {
+			currentTarget: HTMLInputElement;
+		}
+	) {
+		const url = new URL(window.location.href);
+		showPlayers = event.currentTarget.checked;
+		if (showPlayers) {
+			url.searchParams.set('show_players', '1');
+		} else {
+			url.searchParams.delete('show_players');
+		}
+		pushState(url, $page.state);
+	}
 </script>
 
 <div class="table-controls">
+	<label>
+		<input type="checkbox" checked={showPlayers} onchange={handleShowPlayersChange} />
+		Show players
+	</label>
 	<a
 		class="download-map-summary"
 		download="ESEA team map summary.txt"
@@ -116,10 +142,16 @@
 				<th>Map</th>
 				<th class="numeric">Team score</th>
 				<th class="numeric">Opponent score</th>
+				{#if showPlayers}
+					<th>Team players</th>
+				{/if}
 				<th>Opponent</th>
 				<th>Map ban 1</th>
 				<th>Map ban 2</th>
 				<th>Map ban 3</th>
+				{#if hasNotes}
+					<th>Notes</th>
+				{/if}
 			</tr>
 		</thead>
 		<tbody>
@@ -153,9 +185,20 @@
 								halfScores={mapSummary.opponentHalfScores}
 							/>
 						</td>
-						<td>
+						{#if showPlayers}
+							<td>
+								{#if mapSummary.teamPlayers?.length}
+									<ul class="player-list">
+										{#each mapSummary.teamPlayers as player}
+											<li>{player.nickname}</li>
+										{/each}
+									</ul>
+								{/if}
+							</td>
+						{/if}
+						<td class="opponent-cell">
 							{#if matchData.summary.opponent}
-								<span class="opponent-contents">
+								<div class="opponent-contents">
 									<img
 										class="team-avatar"
 										src={matchData.summary.opponent.avatar ||
@@ -169,7 +212,14 @@
 									>
 										{matchData.summary.opponent.name}
 									</a>
-								</span>
+								</div>
+							{/if}
+							{#if showPlayers && mapSummary.opponentPlayers?.length}
+								<ul class="player-list">
+									{#each mapSummary.opponentPlayers as player}
+										<li>{player.nickname}</li>
+									{/each}
+								</ul>
 							{/if}
 						</td>
 						{#each [0, 1, 2] as mapIndex}
@@ -195,6 +245,17 @@
 								<td></td>
 							{/if}
 						{/each}
+						{#if hasNotes}
+							<td>
+								{#if matchData.notes?.length}
+									<ol>
+										{#each matchData.notes as note}
+											<li>{note}</li>
+										{/each}
+									</ol>
+								{/if}
+							</td>
+						{/if}
 					</tr>
 				{:else}
 					<tr class="ffw">
@@ -236,9 +297,23 @@
 								</span>
 							{/if}
 						</td>
+						{#if showPlayers}
+							<td></td>
+						{/if}
 						<td></td>
 						<td></td>
 						<td></td>
+						{#if hasNotes}
+							<td>
+								{#if matchData.notes?.length}
+									<ol>
+										{#each matchData.notes as note}
+											<li>{note}</li>
+										{/each}
+									</ol>
+								{/if}
+							</td>
+						{/if}
 					</tr>
 				{/each}
 			{/each}
@@ -294,15 +369,14 @@
 		font-weight: 600;
 		text-align: left;
 		padding: 0.5rem;
+		text-wrap: nowrap;
 	}
 
-	tr:first-child th,
-	tr:first-child td {
+	thead tr:first-child th {
 		border-top: none;
 	}
 
-	tr:last-child th,
-	tr:last-child td {
+	tbody tr:last-child td {
 		border-bottom: none;
 	}
 
@@ -359,5 +433,15 @@
 
 	td[data-win='false'] {
 		color: red;
+	}
+
+	ul.player-list {
+		font-size: 0.9rem;
+		margin: 0;
+		padding-left: 1rem;
+	}
+
+	.opponent-cell ul.player-list {
+		padding-left: 2rem;
 	}
 </style>

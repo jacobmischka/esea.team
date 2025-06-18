@@ -27,9 +27,10 @@ export interface MapSummary {
 	teamScore?: number;
 	teamHalfScores?: [number, number];
 	teamPlayers?: TeamPlayer[];
+	opponentName?: string;
 	opponentScore?: number;
 	opponentHalfScores?: [number, number];
-	opponentName?: string;
+	opponentPlayers?: TeamPlayer[];
 }
 
 export interface MatchData {
@@ -39,4 +40,5 @@ export interface MatchData {
 	voteHistory?: VoteHistory;
 	summary: MatchSummary;
 	mapSummaries: MapSummary[];
+	notes: string[];
 }

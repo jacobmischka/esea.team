@@ -30,6 +30,7 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 					championshipMatch,
 					summary: {},
 					mapSummaries: [],
+					notes: [],
 				});
 			}
 		}
@@ -59,6 +60,7 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 				}
 			}
 		}
+
 		for (const [matchID, stats] of matchStats) {
 			if (stats) {
 				const data = matchDataMap.get(matchID);
@@ -87,6 +89,7 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 							} else {
 								mapSummary.opponentName = roundTeam?.team_stats.Team;
 								mapSummary.opponentScore = roundTeam?.team_stats['Final Score'];
+								mapSummary.opponentPlayers = roundTeam.players;
 								if (
 									roundTeam?.team_stats['First Half Score'] &&
 									roundTeam?.team_stats['Second Half Score']
@@ -100,9 +103,14 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 						}
 						data.mapSummaries.push(mapSummary);
 					}
+
+					if (!data.mapSummaries.length) {
+						data.notes.push('Match did not complete.');
+					}
 				}
 			}
 		}
+
 		for (const voteHistory of await data.voteHistories) {
 			if (voteHistory?.payload) {
 				const data = matchDataMap.get(voteHistory.payload.match_id);
