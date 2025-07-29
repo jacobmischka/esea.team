@@ -3,6 +3,10 @@ const API_BASE_URL = 'https://open.faceit.com/data/v4';
 export const ESEA_LEAGUE_ID = 'a14b8616-45b9-4581-8637-4dfd0b5f6af8';
 
 import {
+	LeagueFiltersResponse,
+	LeagueInfo,
+	LeagueTeam,
+	LeagueTeamsResponse,
 	Match,
 	MatchStats,
 	Team,
@@ -11,13 +15,16 @@ import {
 	VoteHistory,
 	type TeamLeagueSummary,
 } from './schemas';
+import type { ConferenceTeamData } from './types';
 
 export class APIError extends Error {
+	pathOrURL: string | URL | undefined;
 	response: Response;
 
-	constructor(response: Response) {
+	constructor(response: Response, pathOrURL?: string | URL) {
 		super(response.statusText);
 		this.response = response;
+		this.pathOrURL = pathOrURL;
 	}
 }
 
@@ -47,7 +54,7 @@ class BaseFaceitClient {
 		});
 
 		if (!response.ok) {
-			throw new APIError(response);
+			throw new APIError(response, url);
 		}
 
 		return response.json();
@@ -55,7 +62,18 @@ class BaseFaceitClient {
 }
 
 export class UnofficialFaceitClient extends BaseFaceitClient {
-	public async teamChampionshipMatches(teamID: string, championshipIDs: string[]) {
+	public async leagueInfo(leagueID: string): Promise<LeagueInfo> {
+		const data = await this.fetch(
+			`https://www.faceit.com/api/team-leagues/v2/leagues/${leagueID}`
+		);
+		console.debug(data);
+		return LeagueInfo.parseAsync(data);
+	}
+
+	public async teamChampionshipMatches(
+		teamID: string,
+		championshipIDs: string[]
+	): Promise<TeamChampionshipMatchesResponse> {
 		const url = new URL('https://www.faceit.com/api/championships/v1/matches');
 		url.searchParams.set('participantId', teamID);
 		url.searchParams.set('participantType', 'TEAM');
@@ -81,6 +99,97 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 			`https://www.faceit.com/api/democracy/v1/match/${matchID}/history`
 		);
 		return VoteHistory.parseAsync(data);
+	}
+
+	public async conferenceTeams(
+		conferenceID: string,
+		offset: number = 0,
+		limit: number = 25
+	): Promise<LeagueTeamsResponse> {
+		const searchParams = new URLSearchParams({
+			conferenceId: conferenceID,
+			offset: offset.toString(),
+			limit: limit.toString(),
+		});
+		const data = await this.fetch(
+			`https://www.faceit.com/api/team-leagues/v2/conferences/${conferenceID}/registrations?${searchParams}`
+		);
+		return LeagueTeamsResponse.parseAsync(data);
+	}
+
+	public async leagueFilters(seasonID: string): Promise<LeagueFiltersResponse> {
+		const data = await this.fetch('https://www.faceit.com/api/team-leagues/v1/get_filters', {
+			method: 'POST',
+			body: JSON.stringify({
+				seasonId: seasonID,
+			}),
+		});
+		return LeagueFiltersResponse.parseAsync(data);
+	}
+
+	public async conferenceTeamData(
+		seasonID: string,
+		regionName: string,
+		divisionID: string
+	): Promise<ConferenceTeamData[]> {
+		const filters = await this.leagueFilters(seasonID);
+		const na = filters.payload.regions.find((r) => r.name === regionName);
+		const division = na?.divisions.find((d) => d.id === divisionID);
+
+		const teamMap = new Map<string, LeagueTeam>();
+		const promises: Promise<ConferenceTeamData | null>[] = [];
+		if (division) {
+			for (const stage of division.stages) {
+				for (const conference of stage.conferences) {
+					let total = Infinity;
+					let offset = 0;
+					while (offset < total) {
+						const page = await this.conferenceTeams(conference.id, offset);
+						total = page.team_count;
+						offset += page.payload.length;
+						for (const team of page.payload) {
+							if (!teamMap.has(team.id)) {
+								promises.push(
+									this.teamLeagueSummary(team.premade_team_id)
+										.catch(() => {
+											return null;
+										})
+										.then((resp) => {
+											if (!resp?.payload?.length) return null;
+											return {
+												team,
+												summary: resp?.payload[0],
+											};
+										})
+								);
+							}
+							teamMap.set(team.id, team);
+						}
+					}
+				}
+			}
+		}
+
+		const results = (await Promise.allSettled(promises))
+			.filter((r) => r.status === 'fulfilled')
+			.filter((r) => !!r.value?.summary)
+			.map((r) => r.value)
+			.filter((r) => !!r)
+			.sort((a, b) => {
+				if (!a && b) return -1;
+				if (a && !b) return 1;
+				if (a && b) return a.team.name.localeCompare(b.team.name);
+				return 0;
+			});
+
+		for (const s of results) {
+			s.summary.active_members.sort((a, b) => {
+				if (a.game_role === 'player' && b.game_role !== 'player') return -1;
+				if (b.game_role === 'player' && a.game_role !== 'player') return 1;
+				return a.user_name.localeCompare(b.user_name);
+			});
+		}
+		return results;
 	}
 }
 

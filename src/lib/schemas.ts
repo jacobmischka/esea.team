@@ -223,6 +223,14 @@ export const TeamLeaugeSummary = z.object({
 			league_id: z.string(),
 			game_id: z.string(),
 			league_seasons_info: z.array(LeagueSeason),
+			active_members: z.array(
+				z.object({
+					user_id: z.string(),
+					user_name: z.string(),
+					team_role: z.enum(['member']).or(z.string()),
+					game_role: z.enum(['player', 'substitute']),
+				})
+			),
 		})
 	),
 });
@@ -249,3 +257,62 @@ export const VoteHistory = z.object({
 	}),
 });
 export type VoteHistory = z.infer<typeof VoteHistory>;
+
+export const LeagueInfo = z.object({
+	payload: z.object({
+		league_id: z.string(),
+		name: z.string(),
+		current_season_id: z.string(),
+	}),
+});
+export type LeagueInfo = z.infer<typeof LeagueInfo>;
+
+export const LeagueTeam = z.object({
+	id: z.string(),
+	league_team_id: z.string(),
+	premade_team_id: z.string(),
+	name: z.string(),
+	nickname: z.string(),
+});
+export type LeagueTeam = z.infer<typeof LeagueTeam>;
+
+export const LeagueTeamsResponse = z.object({
+	team_count: z.number(),
+	offset: z.number(),
+	limit: z.number(),
+	payload: z.array(LeagueTeam),
+});
+export type LeagueTeamsResponse = z.infer<typeof LeagueTeamsResponse>;
+
+export const LeagueConference = z.object({
+	id: z.string(),
+	name: z.string(),
+});
+export type LeagueConference = z.infer<typeof LeagueConference>;
+
+export const LeagueDivision = z.object({
+	id: z.string(),
+	name: z.string(),
+	stages: z.array(
+		z.object({
+			id: z.string(),
+			name: z.string(),
+			conferences: z.array(LeagueConference),
+		})
+	),
+});
+export type LeagueDivision = z.infer<typeof LeagueDivision>;
+
+export const LeagueFiltersResponse = z.object({
+	payload: z.object({
+		season_id: z.string(),
+		regions: z.array(
+			z.object({
+				id: z.string(),
+				name: z.string(),
+				divisions: z.array(LeagueDivision),
+			})
+		),
+	}),
+});
+export type LeagueFiltersResponse = z.infer<typeof LeagueFiltersResponse>;

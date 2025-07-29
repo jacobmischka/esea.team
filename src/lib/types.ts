@@ -1,8 +1,10 @@
 import type {
+	LeagueTeam,
 	Match,
 	MatchStats,
 	MatchTeam,
 	TeamChampionshipMatchesResponse,
+	TeamLeagueSummary,
 	TeamPlayer,
 	VoteHistory,
 } from './schemas';
@@ -41,4 +43,9 @@ export interface MatchData {
 	summary: MatchSummary;
 	mapSummaries: MapSummary[];
 	notes: string[];
+}
+
+export interface ConferenceTeamData {
+	team: LeagueTeam;
+	summary: TeamLeagueSummary['payload'][number];
 }
