@@ -228,7 +228,7 @@ export const TeamLeaugeSummary = z.object({
 					user_id: z.string(),
 					user_name: z.string(),
 					team_role: z.enum(['member']).or(z.string()),
-					game_role: z.enum(['player', 'substitute']),
+					game_role: z.enum(['player', 'substitute', 'coach']).or(z.string()),
 				})
 			),
 		})
@@ -283,6 +283,24 @@ export const LeagueTeamsResponse = z.object({
 	payload: z.array(LeagueTeam),
 });
 export type LeagueTeamsResponse = z.infer<typeof LeagueTeamsResponse>;
+
+export const ConferenceStandingsTeam = z.object({
+	entity_id: z.string(),
+	league_team_id: z.string(),
+	premade_team_id: z.string(),
+	name: z.string(),
+	nickname: z.string(),
+});
+export type ConferenceStandingsTeam = z.infer<typeof ConferenceStandingsTeam>;
+
+export const ConferenceStandingsResponse = z.object({
+	offset: z.number(),
+	limit: z.number(),
+	payload: z.object({
+		standings: z.array(ConferenceStandingsTeam),
+	}),
+});
+export type ConferenceStandingsResponse = z.infer<typeof ConferenceStandingsResponse>;
 
 export const LeagueConference = z.object({
 	id: z.string(),

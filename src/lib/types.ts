@@ -1,5 +1,5 @@
 import type {
-	LeagueTeam,
+	ConferenceStandingsTeam,
 	Match,
 	MatchStats,
 	MatchTeam,
@@ -46,6 +46,6 @@ export interface MatchData {
 }
 
 export interface ConferenceTeamData {
-	team: LeagueTeam;
+	team: ConferenceStandingsTeam;
 	summary: TeamLeagueSummary['payload'][number];
 }

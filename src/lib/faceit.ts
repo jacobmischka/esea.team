@@ -3,9 +3,10 @@ const API_BASE_URL = 'https://open.faceit.com/data/v4';
 export const ESEA_LEAGUE_ID = 'a14b8616-45b9-4581-8637-4dfd0b5f6af8';
 
 import {
+	ConferenceStandingsResponse,
+	ConferenceStandingsTeam,
 	LeagueFiltersResponse,
 	LeagueInfo,
-	LeagueTeam,
 	LeagueTeamsResponse,
 	Match,
 	MatchStats,
@@ -116,6 +117,23 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 		return LeagueTeamsResponse.parseAsync(data);
 	}
 
+	public async conferenceStandings(
+		conferenceID: string,
+		offset: number = 0,
+		limit: number = 100
+	): Promise<ConferenceStandingsResponse> {
+		const searchParams = new URLSearchParams({
+			entityType: 'conference',
+			entityId: conferenceID,
+			offset: offset.toString(),
+			limit: limit.toString(),
+		});
+		const data = await this.fetch(
+			`https://www.faceit.com/api/team-leagues/v2/standings?${searchParams}`
+		);
+		return ConferenceStandingsResponse.parseAsync(data);
+	}
+
 	public async leagueFilters(seasonID: string): Promise<LeagueFiltersResponse> {
 		const data = await this.fetch('https://www.faceit.com/api/team-leagues/v1/get_filters', {
 			method: 'POST',
@@ -135,26 +153,30 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 		const na = filters.payload.regions.find((r) => r.name === regionName);
 		const division = na?.divisions.find((d) => d.id === divisionID);
 
-		const teamMap = new Map<string, LeagueTeam>();
+		const teamMap = new Map<string, ConferenceStandingsTeam>();
 		const promises: Promise<ConferenceTeamData | null>[] = [];
 		if (division) {
 			for (const stage of division.stages) {
 				for (const conference of stage.conferences) {
-					let total = Infinity;
 					let offset = 0;
-					while (offset < total) {
-						const page = await this.conferenceTeams(conference.id, offset);
-						total = page.team_count;
-						offset += page.payload.length;
-						for (const team of page.payload) {
-							if (!teamMap.has(team.id)) {
+					while (true) {
+						const page = await this.conferenceStandings(conference.id, offset);
+						if (!page.payload.standings.length) break;
+
+						offset += page.payload.standings.length;
+						for (const team of page.payload.standings) {
+							if (!teamMap.has(team.premade_team_id)) {
 								promises.push(
 									this.teamLeagueSummary(team.premade_team_id)
-										.catch(() => {
+										.catch((err) => {
+											console.debug('Failed to find team', team, err);
 											return null;
 										})
 										.then((resp) => {
-											if (!resp?.payload?.length) return null;
+											if (!resp?.payload?.length) {
+												console.debug('Failed to find team', team, resp);
+												return null;
+											}
 											return {
 												team,
 												summary: resp?.payload[0],
@@ -162,7 +184,7 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 										})
 								);
 							}
-							teamMap.set(team.id, team);
+							teamMap.set(team.premade_team_id, team);
 						}
 					}
 				}
