@@ -66,7 +66,6 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 		const data = await this.fetch(
 			`https://www.faceit.com/api/team-leagues/v2/leagues/${leagueID}`
 		);
-		console.debug(data);
 		return LeagueInfo.parseAsync(data);
 	}
 
