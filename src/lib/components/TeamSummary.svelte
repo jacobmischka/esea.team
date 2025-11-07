@@ -6,7 +6,8 @@
 	import TeamMatchesTable from '$lib/components/TeamMatchesTable.svelte';
 	import { assets } from '$app/paths';
 	import { dev } from '$app/environment';
-	import { goto } from '$app/navigation';
+	import { goto, pushState } from '$app/navigation';
+	import { page } from '$app/stores';
 
 	const {
 		matchData,
@@ -24,6 +25,34 @@
 		console.debug({ matchData, team, seasons, season });
 	}
 
+	let showPlayers = $state(Boolean($page.url.searchParams.get('show_players')));
+	let showMapPicks = $state(Boolean($page.url.searchParams.get('show_map_picks')));
+
+	function setShowPlayers(val: boolean) {
+		showPlayers = val;
+	}
+
+	function setShowMapPicks(val: boolean) {
+		showMapPicks = val;
+	}
+
+	function toggleParamHandler(paramName: string, setter: (val: boolean) => void) {
+		return (
+			event: Event & {
+				currentTarget: HTMLInputElement;
+			}
+		) => {
+			const url = new URL(window.location.href);
+			setter(event.currentTarget.checked);
+			if (event.currentTarget.checked) {
+				url.searchParams.set(paramName, '1');
+			} else {
+				url.searchParams.delete(paramName);
+			}
+			pushState(url, $page.state);
+		};
+	}
+
 	const playerMap = new Map<string, { member: TeamMember; count: number }>();
 	for (const member of team.members) {
 		playerMap.set(member.nickname, { member, count: 0 });
@@ -35,7 +64,7 @@
 	async function handleSeasonChange(
 		event: Event & {
 			currentTarget: HTMLSelectElement;
-		},
+		}
 	) {
 		const url = new URL(window.location.href);
 		url.searchParams.set('season_id', event.currentTarget.value);
@@ -45,7 +74,10 @@
 	for (const data of matchData) {
 		for (const mapSummary of data.mapSummaries) {
 			if (mapSummary.mapName && mapSummary.teamWin) {
-				mapWinCounts.set(mapSummary.mapName, (mapWinCounts.get(mapSummary.mapName) ?? 0) + 1);
+				mapWinCounts.set(
+					mapSummary.mapName,
+					(mapWinCounts.get(mapSummary.mapName) ?? 0) + 1
+				);
 			}
 			if (mapSummary.teamPlayers) {
 				for (const player of mapSummary.teamPlayers) {
@@ -77,22 +109,37 @@
 	const playedCounts = countAndSort(
 		matchData
 			.flatMap((matchData) => matchData.mapSummaries.map((mapSummary) => mapSummary.mapName))
-			.filter((v) => typeof v === 'string'),
+			.filter((v) => typeof v === 'string')
 	);
 	const ban1Counts = countAndSort(
 		matchData
 			.map((matchData) => matchData.summary.teamMapBans?.[0])
-			.filter((v) => typeof v === 'string'),
+			.filter((v) => typeof v === 'string')
 	);
 	const ban2Counts = countAndSort(
 		matchData
 			.map((matchData) => matchData.summary.teamMapBans?.[1])
-			.filter((v) => typeof v === 'string'),
+			.filter((v) => typeof v === 'string')
 	);
 	const ban3Counts = countAndSort(
 		matchData
 			.map((matchData) => matchData.summary.teamMapBans?.[2])
-			.filter((v) => typeof v === 'string'),
+			.filter((v) => typeof v === 'string')
+	);
+	const pick1Counts = countAndSort(
+		matchData
+			.map((matchData) => matchData.summary.teamMapPicks?.[0])
+			.filter((v) => typeof v === 'string')
+	);
+	const pick2Counts = countAndSort(
+		matchData
+			.map((matchData) => matchData.summary.teamMapPicks?.[1])
+			.filter((v) => typeof v === 'string')
+	);
+	const pick3Counts = countAndSort(
+		matchData
+			.map((matchData) => matchData.summary.teamMapPicks?.[2])
+			.filter((v) => typeof v === 'string')
 	);
 </script>
 
@@ -140,7 +187,25 @@
 			</h2>
 		{/if}
 
-		<TeamMatchesTable matchesData={matchData} />
+		<div class="controls">
+			<label>
+				<input
+					type="checkbox"
+					checked={showPlayers}
+					onchange={toggleParamHandler('show_players', setShowPlayers)}
+				/>
+				Show players
+			</label>
+			<label>
+				<input
+					type="checkbox"
+					checked={showMapPicks}
+					onchange={toggleParamHandler('show_map_picks', setShowMapPicks)}
+				/>
+				Show map picks
+			</label>
+		</div>
+		<TeamMatchesTable matchesData={matchData} {showPlayers} {showMapPicks} />
 	</section>
 
 	<section class="charts">
@@ -155,36 +220,82 @@
 			/>
 		</div>
 
-		<div class="chart-container">
-			<span class="figure-heading"> First bans </span>
-			<PieFigure
-				series={ban1Counts.map((c) => c.count)}
-				labels={ban1Counts.map((c) => c.name)}
-				legendPosition="below"
-				showValue
-			/>
-		</div>
+		{#if ban1Counts.length > 0}
+			<div class="chart-container">
+				<span class="figure-heading">First bans</span>
+				<PieFigure
+					series={ban1Counts.map((c) => c.count)}
+					labels={ban1Counts.map((c) => c.name)}
+					legendPosition="below"
+					showValue
+				/>
+			</div>
+		{/if}
 
-		<div class="chart-container">
-			<span class="figure-heading"> Second bans </span>
-			<PieFigure
-				series={ban2Counts.map((c) => c.count)}
-				labels={ban2Counts.map((c) => c.name)}
-				legendPosition="below"
-				showValue
-			/>
-		</div>
+		{#if ban2Counts.length > 0}
+			<div class="chart-container">
+				<span class="figure-heading">Second bans</span>
+				<PieFigure
+					series={ban2Counts.map((c) => c.count)}
+					labels={ban2Counts.map((c) => c.name)}
+					legendPosition="below"
+					showValue
+				/>
+			</div>
+		{/if}
 
-		<div class="chart-container">
-			<span class="figure-heading"> Third bans </span>
-			<PieFigure
-				series={ban3Counts.map((c) => c.count)}
-				labels={ban3Counts.map((c) => c.name)}
-				legendPosition="below"
-				showValue
-			/>
-		</div>
+		{#if ban3Counts.length > 0}
+			<div class="chart-container">
+				<span class="figure-heading">Third bans</span>
+				<PieFigure
+					series={ban3Counts.map((c) => c.count)}
+					labels={ban3Counts.map((c) => c.name)}
+					legendPosition="below"
+					showValue
+				/>
+			</div>
+		{/if}
 	</section>
+
+	{#if showMapPicks}
+		<section class="charts">
+			{#if pick1Counts.length > 0}
+				<div class="chart-container">
+					<span class="figure-heading">First picks</span>
+					<PieFigure
+						series={pick1Counts.map((c) => c.count)}
+						labels={pick1Counts.map((c) => c.name)}
+						legendPosition="below"
+						showValue
+					/>
+				</div>
+			{/if}
+
+			{#if pick2Counts.length > 0}
+				<div class="chart-container">
+					<span class="figure-heading">Second picks</span>
+					<PieFigure
+						series={pick2Counts.map((c) => c.count)}
+						labels={pick2Counts.map((c) => c.name)}
+						legendPosition="below"
+						showValue
+					/>
+				</div>
+			{/if}
+
+			{#if pick3Counts.length > 0}
+				<div class="chart-container">
+					<span class="figure-heading">Third picks</span>
+					<PieFigure
+						series={pick3Counts.map((c) => c.count)}
+						labels={pick3Counts.map((c) => c.name)}
+						legendPosition="below"
+						showValue
+					/>
+				</div>
+			{/if}
+		</section>
+	{/if}
 </section>
 
 <style>
@@ -228,7 +339,16 @@
 		line-height: 1rem;
 	}
 
+	.controls {
+		display: flex;
+		gap: 1rem;
+		justify-content: flex-end;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
 	.charts {
+		margin: 2rem 0;
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;

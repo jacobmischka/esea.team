@@ -22,6 +22,7 @@ export interface MatchSummary {
 	opponent?: MatchTeam;
 	mapChoices?: MapChoice[];
 	teamMapBans?: string[];
+	teamMapPicks?: string[];
 }
 
 export interface MapSummary {

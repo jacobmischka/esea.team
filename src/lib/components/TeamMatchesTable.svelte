@@ -2,13 +2,17 @@
 	import { mkConfig, generateCsv, download } from 'export-to-csv';
 
 	import type { MatchData } from '$lib/types';
-	import { page } from '$app/stores';
 
 	import { ucfirst } from '../utils';
-	import { pushState } from '$app/navigation';
 	import TeamMatchRow from './TeamMatchRow.svelte';
 
-	const { matchesData }: { matchesData: MatchData[] } = $props();
+	interface Props {
+		matchesData: MatchData[];
+		showPlayers: boolean;
+		showMapPicks: boolean;
+	}
+
+	const { matchesData, showPlayers, showMapPicks }: Props = $props();
 
 	const csvConfig = mkConfig({
 		filename: 'ESEA team match summary',
@@ -72,7 +76,7 @@
 								?.map((mapBan, mapIndex) => [
 									`mapBan${mapIndex + 1}`,
 									`${ucfirst(mapBan.team)}: ${mapBan.map}`,
-								]) ?? [],
+								]) ?? []
 						),
 						...Object.fromEntries(
 							matchData.summary.mapChoices
@@ -80,7 +84,7 @@
 								?.map((mapPick, mapIndex) => [
 									`mapPick${mapIndex + 1}`,
 									`${ucfirst(mapPick.team)}: ${mapPick.map}`,
-								]) ?? [],
+								]) ?? []
 						),
 					}))
 				: [
@@ -88,8 +92,8 @@
 							winLoss: matchData.summary.teamWin ? 'W' : 'L',
 							opponentName: matchData.summary.opponent?.name,
 						},
-					],
-		),
+					]
+		)
 	);
 
 	const mapsSummaryText = $derived(
@@ -98,61 +102,17 @@
 				.map((matchData) =>
 					matchData.mapSummaries.length
 						? `${matchData.mapSummaries.map((mapSummary) => mapSummary.mapName).join(', ')} - ${matchData.summary.mapChoices?.length ? `Banned ${matchData.summary.mapChoices?.filter((choice) => choice.choice === 'drop')?.[0].team === 'team' ? 'first' : 'second'}; ${matchData.summary.teamMapBans?.join(', ')}` : 'Bans unavailable'}`
-						: 'No map data, likely FF',
+						: 'No map data, likely FF'
 				)
-				.join('\n'),
-		),
+				.join('\n')
+		)
 	);
 
 	const hasNotes = $derived(matchesData.some((match) => Boolean(match.notes?.length)));
 	const hasMapPicks = $derived(matchesData.some((match) => Boolean(match.mapSummaries?.length)));
-
-	let showPlayers = $state(Boolean($page.url.searchParams.get('show_players')));
-	let showMapPicks = $state(Boolean($page.url.searchParams.get('show_map_picks')));
-
-	function setShowPlayers(val: boolean) {
-		showPlayers = val;
-	}
-
-	function setShowMapPicks(val: boolean) {
-		showMapPicks = val;
-	}
-
-	function toggleParamHandler(paramName: string, setter: (val: boolean) => void) {
-		return (
-			event: Event & {
-				currentTarget: HTMLInputElement;
-			},
-		) => {
-			const url = new URL(window.location.href);
-			setter(event.currentTarget.checked);
-			if (event.currentTarget.checked) {
-				url.searchParams.set(paramName, '1');
-			} else {
-				url.searchParams.delete(paramName);
-			}
-			pushState(url, $page.state);
-		};
-	}
 </script>
 
 <div class="table-controls">
-	<label>
-		<input
-			type="checkbox"
-			checked={showPlayers}
-			onchange={toggleParamHandler('show_players', setShowPlayers)}
-		/>
-		Show players
-	</label>
-	<label>
-		<input
-			type="checkbox"
-			checked={showMapPicks}
-			onchange={toggleParamHandler('show_map_picks', setShowMapPicks)}
-		/>
-		Show map picks
-	</label>
 	<a
 		class="download-map-summary"
 		download="ESEA team map summary.txt"
@@ -209,7 +169,13 @@
 						{showMapPicks}
 					/>
 				{:else}
-					<TeamMatchRow {matchData} {hasMapPicks} {hasNotes} {showPlayers} {showMapPicks} />
+					<TeamMatchRow
+						{matchData}
+						{hasMapPicks}
+						{hasNotes}
+						{showPlayers}
+						{showMapPicks}
+					/>
 				{/each}
 			{/each}
 		</tbody>
