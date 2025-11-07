@@ -122,12 +122,11 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 						(t) => t.entity_type === 'map'
 					);
 					if (mapTicket) {
-						data.summary.mapBans = mapTicket.entities
-							.filter((entity) => entity.status === 'drop')
-							.map((entity) => ({
-								team: entity.selected_by === teamFaction ? 'team' : 'opponent',
-								map: mapsMap.get(entity.guid)?.name ?? entity.guid,
-							}));
+						data.summary.mapChoices = mapTicket.entities.map((entity) => ({
+							choice: entity.status,
+							team: entity.selected_by === teamFaction ? 'team' : 'opponent',
+							map: mapsMap.get(entity.guid)?.name ?? entity.guid,
+						}));
 						data.summary.teamMapBans = mapTicket.entities
 							.filter(
 								(entity) =>

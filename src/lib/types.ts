@@ -9,8 +9,9 @@ import type {
 	VoteHistory,
 } from './schemas';
 
-export interface MapBan {
+export interface MapChoice {
 	team: 'team' | 'opponent';
+	choice: 'drop' | 'pick';
 	map: string;
 }
 
@@ -19,7 +20,7 @@ export interface MatchSummary {
 	teamScore?: number;
 	opponentScore?: number;
 	opponent?: MatchTeam;
-	mapBans?: MapBan[];
+	mapChoices?: MapChoice[];
 	teamMapBans?: string[];
 }
 

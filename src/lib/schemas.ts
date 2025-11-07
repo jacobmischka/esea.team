@@ -133,6 +133,7 @@ export const Match = z.object({
 		.object({
 			map: z.object({
 				entities: z.array(MapInfo),
+				pick: z.array(z.string()).nullish(),
 			}),
 		})
 		.optional(),

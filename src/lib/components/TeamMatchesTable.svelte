@@ -2,12 +2,11 @@
 	import { mkConfig, generateCsv, download } from 'export-to-csv';
 
 	import type { MatchData } from '$lib/types';
-	import { assets } from '$app/paths';
 	import { page } from '$app/stores';
 
-	import TeamMapScores from './TeamMapScores.svelte';
 	import { ucfirst } from '../utils';
 	import { pushState } from '$app/navigation';
+	import TeamMatchRow from './TeamMatchRow.svelte';
 
 	const { matchesData }: { matchesData: MatchData[] } = $props();
 
@@ -46,6 +45,10 @@
 				key: `mapBan${mapIndex}`,
 				displayLabel: `Map ban ${mapIndex}`,
 			})),
+			...Array.from({ length: 6 }, (_, i) => i + 1).map((mapIndex) => ({
+				key: `mapPick${mapIndex}`,
+				displayLabel: `Map pick ${mapIndex}`,
+			})),
 		],
 	});
 
@@ -64,10 +67,20 @@
 						opponentScore: mapSummary.opponentScore,
 						opponentHalfScores: mapSummary.opponentHalfScores?.join(' - '),
 						...Object.fromEntries(
-							matchData.summary.mapBans?.map((mapBan, mapIndex) => [
-								`mapBan${mapIndex + 1}`,
-								`${ucfirst(mapBan.team)}: ${mapBan.map}`,
-							]) ?? []
+							matchData.summary.mapChoices
+								?.filter((choice) => choice.choice === 'drop')
+								?.map((mapBan, mapIndex) => [
+									`mapBan${mapIndex + 1}`,
+									`${ucfirst(mapBan.team)}: ${mapBan.map}`,
+								]) ?? []
+						),
+						...Object.fromEntries(
+							matchData.summary.mapChoices
+								?.filter((choice) => choice.choice === 'pick')
+								?.map((mapPick, mapIndex) => [
+									`mapPick${mapIndex + 1}`,
+									`${ucfirst(mapPick.team)}: ${mapPick.map}`,
+								]) ?? []
 						),
 					}))
 				: [
@@ -84,7 +97,7 @@
 			matchesData
 				.map((matchData) =>
 					matchData.mapSummaries.length
-						? `${matchData.mapSummaries.map((mapSummary) => mapSummary.mapName).join(', ')} - ${matchData.summary.mapBans?.length ? `Banned ${matchData.summary.mapBans?.[0].team === 'team' ? 'first' : 'second'}; ${matchData.summary.teamMapBans?.join(', ')}` : 'Bans unavailable'}`
+						? `${matchData.mapSummaries.map((mapSummary) => mapSummary.mapName).join(', ')} - ${matchData.summary.mapChoices?.length ? `Banned ${matchData.summary.mapChoices?.filter((choice) => choice.choice === 'drop')?.[0].team === 'team' ? 'first' : 'second'}; ${matchData.summary.teamMapBans?.join(', ')}` : 'Bans unavailable'}`
 						: 'No map data, likely FF'
 				)
 				.join('\n')
@@ -92,29 +105,53 @@
 	);
 
 	const hasNotes = $derived(matchesData.some((match) => Boolean(match.notes?.length)));
+	const hasMapPicks = $derived(matchesData.some((match) => Boolean(match.mapSummaries?.length)));
 
 	let showPlayers = $state(Boolean($page.url.searchParams.get('show_players')));
+	let showMapPicks = $state(Boolean($page.url.searchParams.get('show_map_picks')));
 
-	async function handleShowPlayersChange(
-		event: Event & {
-			currentTarget: HTMLInputElement;
-		}
-	) {
-		const url = new URL(window.location.href);
-		showPlayers = event.currentTarget.checked;
-		if (showPlayers) {
-			url.searchParams.set('show_players', '1');
-		} else {
-			url.searchParams.delete('show_players');
-		}
-		pushState(url, $page.state);
+	function setShowPlayers(val: boolean) {
+		showPlayers = val;
+	}
+
+	function setShowMapPicks(val: boolean) {
+		showMapPicks = val;
+	}
+
+	function toggleParamHandler(paramName: string, setter: (val: boolean) => void) {
+		return (
+			event: Event & {
+				currentTarget: HTMLInputElement;
+			}
+		) => {
+			const url = new URL(window.location.href);
+			setter(event.currentTarget.checked);
+			if (event.currentTarget.checked) {
+				url.searchParams.set(paramName, '1');
+			} else {
+				url.searchParams.delete(paramName);
+			}
+			pushState(url, $page.state);
+		};
 	}
 </script>
 
 <div class="table-controls">
 	<label>
-		<input type="checkbox" checked={showPlayers} onchange={handleShowPlayersChange} />
+		<input
+			type="checkbox"
+			checked={showPlayers}
+			onchange={toggleParamHandler('show_players', setShowPlayers)}
+		/>
 		Show players
+	</label>
+	<label>
+		<input
+			type="checkbox"
+			checked={showMapPicks}
+			onchange={toggleParamHandler('show_map_picks', setShowMapPicks)}
+		/>
+		Show map picks
 	</label>
 	<a
 		class="download-map-summary"
@@ -146,9 +183,14 @@
 					<th>Team players</th>
 				{/if}
 				<th>Opponent</th>
-				<th>Map ban 1</th>
-				<th>Map ban 2</th>
-				<th>Map ban 3</th>
+				<th>Ban 1</th>
+				<th>Ban 2</th>
+				<th>Ban 3</th>
+				{#if hasMapPicks && showMapPicks}
+					<th>Pick 1</th>
+					<th>Pick 2</th>
+					<th>Pick 3</th>
+				{/if}
 				{#if hasNotes}
 					<th>Notes</th>
 				{/if}
@@ -157,164 +199,23 @@
 		<tbody>
 			{#each matchesData as matchData}
 				{#each matchData.mapSummaries as mapSummary, mapSummaryIndex}
-					<tr>
-						<td data-win={mapSummary.teamWin}>{mapSummary.teamWin ? 'W' : 'L'}</td>
-						<td>
-							{#if matchData.match}
-								<a
-									href="https://www.faceit.com/en/cs2/room/{matchData.match
-										.match_id}"
-									target="_blank"
-									rel="noreferrer noopener"
-								>
-									{mapSummary.mapName}
-								</a>
-							{:else}
-								{mapSummary.mapName}
-							{/if}
-						</td>
-						<td class="numeric">
-							<TeamMapScores
-								score={mapSummary.teamScore}
-								halfScores={mapSummary.teamHalfScores}
-							/>
-						</td>
-						<td class="numeric">
-							<TeamMapScores
-								score={mapSummary.opponentScore}
-								halfScores={mapSummary.opponentHalfScores}
-							/>
-						</td>
-						{#if showPlayers}
-							<td>
-								{#if mapSummary.teamPlayers?.length}
-									<ul class="player-list">
-										{#each mapSummary.teamPlayers as player}
-											<li>{player.nickname}</li>
-										{/each}
-									</ul>
-								{/if}
-							</td>
-						{/if}
-						<td class="opponent-cell">
-							{#if matchData.summary.opponent}
-								<div class="opponent-contents">
-									<img
-										class="team-avatar"
-										src={matchData.summary.opponent.avatar ||
-											`${assets}/placeholder.svg`}
-										alt=""
-									/>
-									<a
-										href="/{matchData.summary.opponent.faction_id}"
-										target="_blank"
-										rel="noreferrer noopener"
-									>
-										{matchData.summary.opponent.name}
-									</a>
-								</div>
-							{/if}
-							{#if showPlayers && mapSummary.opponentPlayers?.length}
-								<ul class="player-list">
-									{#each mapSummary.opponentPlayers as player}
-										<li>{player.nickname}</li>
-									{/each}
-								</ul>
-							{/if}
-						</td>
-						{#each [0, 1, 2] as mapIndex}
-							{#if mapSummaryIndex === 0}
-								<td>
-									<div class="map-ban-cell">
-										<span
-											class="map-ban"
-											data-team={matchData.summary.mapBans?.[mapIndex * 2]
-												?.team}
-											>{matchData.summary.mapBans?.[mapIndex * 2]?.map}</span
-										>
-										<span
-											class="map-ban"
-											data-team={matchData.summary.mapBans?.[mapIndex * 2 + 1]
-												?.team}
-											>{matchData.summary.mapBans?.[mapIndex * 2 + 1]
-												?.map}</span
-										>
-									</div>
-								</td>
-							{:else}
-								<td></td>
-							{/if}
-						{/each}
-						{#if hasNotes}
-							<td>
-								{#if matchData.notes?.length}
-									<ol>
-										{#each matchData.notes as note}
-											<li>{note}</li>
-										{/each}
-									</ol>
-								{/if}
-							</td>
-						{/if}
-					</tr>
+					<TeamMatchRow
+						{matchData}
+						{mapSummary}
+						{mapSummaryIndex}
+						{hasMapPicks}
+						{hasNotes}
+						{showPlayers}
+						{showMapPicks}
+					/>
 				{:else}
-					<tr class="ffw">
-						<td data-win={matchData.summary.teamWin}
-							>{matchData.summary.teamWin ? 'W' : 'L'}</td
-						>
-						<td>
-							{#if matchData.match}
-								<a
-									href="https://www.faceit.com/en/cs2/room/{matchData.match
-										.match_id}"
-									target="_blank"
-									rel="noreferrer noopener"
-								>
-									FFW
-								</a>
-							{:else}
-								FFW
-							{/if}
-						</td>
-						<td class="numeric"></td>
-						<td class="numeric"></td>
-						<td>
-							{#if matchData.summary.opponent}
-								<span class="opponent-contents">
-									<img
-										class="team-avatar"
-										src={matchData.summary.opponent.avatar ||
-											`${assets}/placeholder.svg`}
-										alt=""
-									/>
-									<a
-										href="/{matchData.summary.opponent.faction_id}"
-										target="_blank"
-										rel="noreferrer noopener"
-									>
-										{matchData.summary.opponent.name}
-									</a>
-								</span>
-							{/if}
-						</td>
-						{#if showPlayers}
-							<td></td>
-						{/if}
-						<td></td>
-						<td></td>
-						<td></td>
-						{#if hasNotes}
-							<td>
-								{#if matchData.notes?.length}
-									<ol>
-										{#each matchData.notes as note}
-											<li>{note}</li>
-										{/each}
-									</ol>
-								{/if}
-							</td>
-						{/if}
-					</tr>
+					<TeamMatchRow
+						{matchData}
+						{hasMapPicks}
+						{hasNotes}
+						{showPlayers}
+						{showMapPicks}
+					/>
 				{/each}
 			{/each}
 		</tbody>
@@ -334,12 +235,6 @@
 		font-size: 0.8rem;
 	}
 
-	img {
-		width: 1rem;
-		height: 1rem;
-		border-radius: 50%;
-	}
-
 	.table-container {
 		max-width: 100%;
 		overflow: auto;
@@ -351,21 +246,9 @@
 		width: 100%;
 	}
 
-	tr.ffw {
-		opacity: 0.5;
-	}
-
-	th,
-	td {
+	th {
 		border: 1px solid var(--border-color);
 		font-size: 1.1rem;
-	}
-
-	td {
-		padding: 0.25rem 0.5rem;
-	}
-
-	th {
 		font-weight: 600;
 		text-align: left;
 		padding: 0.5rem;
@@ -376,72 +259,15 @@
 		border-top: none;
 	}
 
-	tbody tr:last-child td {
-		border-bottom: none;
-	}
-
-	th:first-child,
-	td:first-child {
+	th:first-child {
 		border-left: none;
 	}
 
-	th:last-child,
-	td:last-child {
+	th:last-child {
 		border-right: none;
-	}
-
-	.map-ban-cell {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.map-ban-cell .map-ban[data-team='opponent'] {
-		font-size: 0.7rem;
-	}
-
-	.map-ban-cell .map-ban[data-team='opponent']::before {
-		content: 'Opponent: ';
-	}
-
-	.opponent-contents {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.team-avatar {
-		width: 1.5rem;
-		height: 1.5rem;
 	}
 
 	.numeric {
 		text-align: right;
-	}
-
-	td.numeric {
-		font-family: monospace;
-	}
-
-	td[data-win] {
-		text-align: center;
-	}
-
-	td[data-win='true'] {
-		color: green;
-	}
-
-	td[data-win='false'] {
-		color: red;
-	}
-
-	ul.player-list {
-		font-size: 0.9rem;
-		margin: 0;
-		padding-left: 1rem;
-	}
-
-	.opponent-cell ul.player-list {
-		padding-left: 2rem;
 	}
 </style>
