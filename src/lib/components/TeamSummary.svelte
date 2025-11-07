@@ -27,6 +27,15 @@
 
 	let showPlayers = $state(Boolean($page.url.searchParams.get('show_players')));
 	let showMapPicks = $state(Boolean($page.url.searchParams.get('show_map_picks')));
+	const hasMapPicks = $derived(
+		matchData.some(
+			(match) =>
+				(match.summary.mapChoices?.reduce(
+					(acc, choice) => (choice.choice === 'pick' ? acc + 1 : acc),
+					0
+				) ?? 0) > 1
+		)
+	);
 
 	function setShowPlayers(val: boolean) {
 		showPlayers = val;
@@ -188,6 +197,16 @@
 		{/if}
 
 		<div class="controls">
+			{#if hasMapPicks}
+				<label>
+					<input
+						type="checkbox"
+						checked={showMapPicks}
+						onchange={toggleParamHandler('show_map_picks', setShowMapPicks)}
+					/>
+					Show map picks
+				</label>
+			{/if}
 			<label>
 				<input
 					type="checkbox"
@@ -195,14 +214,6 @@
 					onchange={toggleParamHandler('show_players', setShowPlayers)}
 				/>
 				Show players
-			</label>
-			<label>
-				<input
-					type="checkbox"
-					checked={showMapPicks}
-					onchange={toggleParamHandler('show_map_picks', setShowMapPicks)}
-				/>
-				Show map picks
 			</label>
 		</div>
 		<TeamMatchesTable matchesData={matchData} {showPlayers} {showMapPicks} />
