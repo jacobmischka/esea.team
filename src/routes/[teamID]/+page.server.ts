@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ fetch, url, params }) => {
 
 	const matchesResponse = await client.teamChampionshipMatches(
 		params.teamID,
-		latestESEAChampionships
+		latestESEAChampionships,
 	);
 
 	const matchIDs = matchesResponse.payload.items
@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ fetch, url, params }) => {
 			} catch {
 				return null;
 			}
-		})
+		}),
 	);
 	return { eseaSeasons, season, matchesResponse, matchIDs, voteHistories };
 };

@@ -25,10 +25,10 @@
 	}: Props = $props();
 
 	const mapBans: MapChoice[] | undefined = $derived(
-		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'drop')
+		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'drop'),
 	);
 	const mapPicks: MapChoice[] | undefined = $derived(
-		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'pick')
+		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'pick'),
 	);
 </script>
 
@@ -52,10 +52,7 @@
 			<TeamMapScores score={mapSummary.teamScore} halfScores={mapSummary.teamHalfScores} />
 		</td>
 		<td class="numeric">
-			<TeamMapScores
-				score={mapSummary.opponentScore}
-				halfScores={mapSummary.opponentHalfScores}
-			/>
+			<TeamMapScores score={mapSummary.opponentScore} halfScores={mapSummary.opponentHalfScores} />
 		</td>
 		{#if showPlayers}
 			<td>

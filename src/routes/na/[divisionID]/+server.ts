@@ -9,7 +9,7 @@ export const GET: RequestHandler<{ divisionID: string }> = async ({ fetch, param
 	const results = await client.conferenceTeamData(
 		leagueInfo.payload.current_season_id,
 		'North America',
-		params.divisionID
+		params.divisionID,
 	);
 
 	const response = [HEADERS.join(',')];
@@ -24,7 +24,7 @@ export const GET: RequestHandler<{ divisionID: string }> = async ({ fetch, param
 					player.user_name,
 					player.game_role,
 					`https://www.faceit.com/en/players/${player.user_name}`,
-				].join(',')
+				].join(','),
 			);
 		}
 	}

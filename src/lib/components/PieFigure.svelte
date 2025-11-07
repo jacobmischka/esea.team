@@ -57,9 +57,7 @@
 				<li class="total-label">
 					<div class="label-container">
 						<span class="label-label">Total</span>
-						<span class="label-value"
-							>{formatter(series.reduce((acc, x) => acc + x, 0))}</span
-						>
+						<span class="label-value">{formatter(series.reduce((acc, x) => acc + x, 0))}</span>
 					</div>
 				</li>
 			{/if}

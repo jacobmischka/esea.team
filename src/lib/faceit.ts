@@ -64,15 +64,13 @@ class BaseFaceitClient {
 
 export class UnofficialFaceitClient extends BaseFaceitClient {
 	public async leagueInfo(leagueID: string): Promise<LeagueInfo> {
-		const data = await this.fetch(
-			`https://www.faceit.com/api/team-leagues/v2/leagues/${leagueID}`
-		);
+		const data = await this.fetch(`https://www.faceit.com/api/team-leagues/v2/leagues/${leagueID}`);
 		return LeagueInfo.parseAsync(data);
 	}
 
 	public async teamChampionshipMatches(
 		teamID: string,
-		championshipIDs: string[]
+		championshipIDs: string[],
 	): Promise<TeamChampionshipMatchesResponse> {
 		const url = new URL('https://www.faceit.com/api/championships/v1/matches');
 		url.searchParams.set('participantId', teamID);
@@ -89,14 +87,14 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 
 	public async teamLeagueSummary(teamID: string): Promise<TeamLeagueSummary> {
 		const data = await this.fetch(
-			`https://www.faceit.com/api/team-leagues/v1/teams/${teamID}/profile/leagues/summary`
+			`https://www.faceit.com/api/team-leagues/v1/teams/${teamID}/profile/leagues/summary`,
 		);
 		return TeamLeaugeSummary.parseAsync(data);
 	}
 
 	public async voteHistory(matchID: string): Promise<VoteHistory> {
 		const data = await this.fetch(
-			`https://www.faceit.com/api/democracy/v1/match/${matchID}/history`
+			`https://www.faceit.com/api/democracy/v1/match/${matchID}/history`,
 		);
 		return VoteHistory.parseAsync(data);
 	}
@@ -104,7 +102,7 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 	public async conferenceTeams(
 		conferenceID: string,
 		offset: number = 0,
-		limit: number = 25
+		limit: number = 25,
 	): Promise<LeagueTeamsResponse> {
 		const searchParams = new URLSearchParams({
 			conferenceId: conferenceID,
@@ -112,7 +110,7 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 			limit: limit.toString(),
 		});
 		const data = await this.fetch(
-			`https://www.faceit.com/api/team-leagues/v2/conferences/${conferenceID}/registrations?${searchParams}`
+			`https://www.faceit.com/api/team-leagues/v2/conferences/${conferenceID}/registrations?${searchParams}`,
 		);
 		return LeagueTeamsResponse.parseAsync(data);
 	}
@@ -120,7 +118,7 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 	public async conferenceStandings(
 		conferenceID: string,
 		offset: number = 0,
-		limit: number = 100
+		limit: number = 100,
 	): Promise<ConferenceStandingsResponse> {
 		const searchParams = new URLSearchParams({
 			entityType: 'conference',
@@ -129,7 +127,7 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 			limit: limit.toString(),
 		});
 		const data = await this.fetch(
-			`https://www.faceit.com/api/team-leagues/v2/standings?${searchParams}`
+			`https://www.faceit.com/api/team-leagues/v2/standings?${searchParams}`,
 		);
 		return ConferenceStandingsResponse.parseAsync(data);
 	}
@@ -147,7 +145,7 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 	public async conferenceTeamData(
 		seasonID: string,
 		regionName: string,
-		divisionID: string
+		divisionID: string,
 	): Promise<ConferenceTeamData[]> {
 		const filters = await this.leagueFilters(seasonID);
 		const na = filters.payload.regions.find((r) => r.name === regionName);
@@ -181,7 +179,7 @@ export class UnofficialFaceitClient extends BaseFaceitClient {
 												team,
 												summary: resp?.payload[0],
 											};
-										})
+										}),
 								);
 							}
 							teamMap.set(team.premade_team_id, team);

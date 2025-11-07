@@ -72,7 +72,7 @@
 								?.map((mapBan, mapIndex) => [
 									`mapBan${mapIndex + 1}`,
 									`${ucfirst(mapBan.team)}: ${mapBan.map}`,
-								]) ?? []
+								]) ?? [],
 						),
 						...Object.fromEntries(
 							matchData.summary.mapChoices
@@ -80,7 +80,7 @@
 								?.map((mapPick, mapIndex) => [
 									`mapPick${mapIndex + 1}`,
 									`${ucfirst(mapPick.team)}: ${mapPick.map}`,
-								]) ?? []
+								]) ?? [],
 						),
 					}))
 				: [
@@ -88,8 +88,8 @@
 							winLoss: matchData.summary.teamWin ? 'W' : 'L',
 							opponentName: matchData.summary.opponent?.name,
 						},
-					]
-		)
+					],
+		),
 	);
 
 	const mapsSummaryText = $derived(
@@ -98,10 +98,10 @@
 				.map((matchData) =>
 					matchData.mapSummaries.length
 						? `${matchData.mapSummaries.map((mapSummary) => mapSummary.mapName).join(', ')} - ${matchData.summary.mapChoices?.length ? `Banned ${matchData.summary.mapChoices?.filter((choice) => choice.choice === 'drop')?.[0].team === 'team' ? 'first' : 'second'}; ${matchData.summary.teamMapBans?.join(', ')}` : 'Bans unavailable'}`
-						: 'No map data, likely FF'
+						: 'No map data, likely FF',
 				)
-				.join('\n')
-		)
+				.join('\n'),
+		),
 	);
 
 	const hasNotes = $derived(matchesData.some((match) => Boolean(match.notes?.length)));
@@ -122,7 +122,7 @@
 		return (
 			event: Event & {
 				currentTarget: HTMLInputElement;
-			}
+			},
 		) => {
 			const url = new URL(window.location.href);
 			setter(event.currentTarget.checked);
@@ -209,13 +209,7 @@
 						{showMapPicks}
 					/>
 				{:else}
-					<TeamMatchRow
-						{matchData}
-						{hasMapPicks}
-						{hasNotes}
-						{showPlayers}
-						{showMapPicks}
-					/>
+					<TeamMatchRow {matchData} {hasMapPicks} {hasNotes} {showPlayers} {showMapPicks} />
 				{/each}
 			{/each}
 		</tbody>

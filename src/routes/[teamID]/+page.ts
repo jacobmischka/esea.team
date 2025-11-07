@@ -19,7 +19,7 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 					} catch {
 						return [matchID, null] as const;
 					}
-				})
+				}),
 			),
 		]);
 
@@ -118,9 +118,7 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 				const teamFaction = matchTeamFactions.get(voteHistory.payload.match_id);
 				if (data) {
 					data.voteHistory = voteHistory;
-					const mapTicket = voteHistory.payload.tickets.find(
-						(t) => t.entity_type === 'map'
-					);
+					const mapTicket = voteHistory.payload.tickets.find((t) => t.entity_type === 'map');
 					if (mapTicket) {
 						data.summary.mapChoices = mapTicket.entities.map((entity) => ({
 							choice: entity.status,
@@ -128,10 +126,7 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 							map: mapsMap.get(entity.guid)?.name ?? entity.guid,
 						}));
 						data.summary.teamMapBans = mapTicket.entities
-							.filter(
-								(entity) =>
-									entity.status === 'drop' && entity.selected_by === teamFaction
-							)
+							.filter((entity) => entity.status === 'drop' && entity.selected_by === teamFaction)
 							.map((entity) => mapsMap.get(entity.guid)?.name ?? entity.guid);
 					}
 				}

@@ -35,7 +35,7 @@
 	async function handleSeasonChange(
 		event: Event & {
 			currentTarget: HTMLSelectElement;
-		}
+		},
 	) {
 		const url = new URL(window.location.href);
 		url.searchParams.set('season_id', event.currentTarget.value);
@@ -45,10 +45,7 @@
 	for (const data of matchData) {
 		for (const mapSummary of data.mapSummaries) {
 			if (mapSummary.mapName && mapSummary.teamWin) {
-				mapWinCounts.set(
-					mapSummary.mapName,
-					(mapWinCounts.get(mapSummary.mapName) ?? 0) + 1
-				);
+				mapWinCounts.set(mapSummary.mapName, (mapWinCounts.get(mapSummary.mapName) ?? 0) + 1);
 			}
 			if (mapSummary.teamPlayers) {
 				for (const player of mapSummary.teamPlayers) {
@@ -80,22 +77,22 @@
 	const playedCounts = countAndSort(
 		matchData
 			.flatMap((matchData) => matchData.mapSummaries.map((mapSummary) => mapSummary.mapName))
-			.filter((v) => typeof v === 'string')
+			.filter((v) => typeof v === 'string'),
 	);
 	const ban1Counts = countAndSort(
 		matchData
 			.map((matchData) => matchData.summary.teamMapBans?.[0])
-			.filter((v) => typeof v === 'string')
+			.filter((v) => typeof v === 'string'),
 	);
 	const ban2Counts = countAndSort(
 		matchData
 			.map((matchData) => matchData.summary.teamMapBans?.[1])
-			.filter((v) => typeof v === 'string')
+			.filter((v) => typeof v === 'string'),
 	);
 	const ban3Counts = countAndSort(
 		matchData
 			.map((matchData) => matchData.summary.teamMapBans?.[2])
-			.filter((v) => typeof v === 'string')
+			.filter((v) => typeof v === 'string'),
 	);
 </script>
 

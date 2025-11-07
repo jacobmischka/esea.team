@@ -104,10 +104,10 @@ export const Match = z.object({
 				factions: z.record(
 					z.object({
 						score: z.number(),
-					})
+					}),
 				),
 				winner: z.string().optional(),
-			})
+			}),
 		)
 		.optional(),
 	faceit_url: z.string().url(),
@@ -177,9 +177,9 @@ export const MatchStats = z.object({
 						'Team Headshots': z.string().optional(),
 						'Team Win': z.coerce.number().optional(),
 					}),
-				})
+				}),
 			),
-		})
+		}),
 	),
 });
 export type MatchStats = z.infer<typeof MatchStats>;
@@ -198,7 +198,7 @@ export const TeamChampionshipMatchesResponse = z.object({
 					})
 					.optional(),
 				championshipId: z.string().optional(),
-			})
+			}),
 		),
 	}),
 });
@@ -212,7 +212,7 @@ export const LeagueSeason = z.object({
 			stage_id: z.string(),
 			stage_name: z.string(),
 			championship_id: z.string(),
-		})
+		}),
 	),
 });
 export type LeagueSeason = z.infer<typeof LeagueSeason>;
@@ -230,9 +230,9 @@ export const TeamLeaugeSummary = z.object({
 					user_name: z.string(),
 					team_role: z.enum(['member']).or(z.string()),
 					game_role: z.enum(['player', 'substitute', 'coach']).or(z.string()),
-				})
+				}),
 			),
-		})
+		}),
 	),
 });
 export type TeamLeagueSummary = z.infer<typeof TeamLeaugeSummary>;
@@ -251,9 +251,9 @@ export const VoteHistory = z.object({
 						random: z.boolean(),
 						round: z.number(),
 						selected_by: z.enum(['faction1', 'faction2', '']),
-					})
+					}),
 				),
-			})
+			}),
 		),
 	}),
 });
@@ -317,7 +317,7 @@ export const LeagueDivision = z.object({
 			id: z.string(),
 			name: z.string(),
 			conferences: z.array(LeagueConference),
-		})
+		}),
 	),
 });
 export type LeagueDivision = z.infer<typeof LeagueDivision>;
@@ -330,7 +330,7 @@ export const LeagueFiltersResponse = z.object({
 				id: z.string(),
 				name: z.string(),
 				divisions: z.array(LeagueDivision),
-			})
+			}),
 		),
 	}),
 });
