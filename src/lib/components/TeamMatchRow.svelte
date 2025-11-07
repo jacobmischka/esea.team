@@ -12,6 +12,8 @@
 		hasNotes: boolean;
 		showPlayers: boolean;
 		showMapPicks: boolean;
+		maxMapPicks: number;
+		maxMapBans: number;
 	}
 
 	const {
@@ -22,13 +24,18 @@
 		hasNotes,
 		showPlayers,
 		showMapPicks,
+		maxMapPicks,
+		maxMapBans,
 	}: Props = $props();
 
 	const mapBans: MapChoice[] | undefined = $derived(
-		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'drop'),
+		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'drop')
 	);
 	const mapPicks: MapChoice[] | undefined = $derived(
-		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'pick'),
+		matchData.summary.mapChoices?.filter((choice) => choice.choice === 'pick').slice(0, -1)
+	);
+	const decider: MapChoice | undefined = $derived(
+		matchData.summary.mapChoices?.findLast((choice) => choice.choice === 'pick')
 	);
 </script>
 
@@ -52,7 +59,10 @@
 			<TeamMapScores score={mapSummary.teamScore} halfScores={mapSummary.teamHalfScores} />
 		</td>
 		<td class="numeric">
-			<TeamMapScores score={mapSummary.opponentScore} halfScores={mapSummary.opponentHalfScores} />
+			<TeamMapScores
+				score={mapSummary.opponentScore}
+				halfScores={mapSummary.opponentHalfScores}
+			/>
 		</td>
 		{#if showPlayers}
 			<td>
@@ -90,7 +100,7 @@
 				</ul>
 			{/if}
 		</td>
-		{#each [0, 1, 2] as mapIndex}
+		{#each Array.from({ length: Math.ceil(maxMapBans / 2) }).map((_, i) => i) as mapIndex}
 			{#if mapSummaryIndex === 0}
 				<td>
 					<div class="map-choice-cell">
@@ -107,7 +117,7 @@
 			{/if}
 		{/each}
 		{#if hasMapPicks && showMapPicks}
-			{#each [0, 1, 2] as mapIndex}
+			{#each Array.from({ length: Math.ceil(maxMapPicks / 2) }).map((_, i) => i) as mapIndex}
 				{#if mapSummaryIndex === 0}
 					<td>
 						<div class="map-choice-cell">
@@ -123,6 +133,11 @@
 					<td></td>
 				{/if}
 			{/each}
+			{#if mapSummaryIndex === 0}
+				<td>{decider?.map}</td>
+			{:else}
+				<td></td>
+			{/if}
 		{/if}
 		{#if hasNotes}
 			<td>
@@ -175,9 +190,14 @@
 		{#if showPlayers}
 			<td></td>
 		{/if}
-		<td></td>
-		<td></td>
-		<td></td>
+		{#each Array.from({ length: Math.round(maxMapBans / 2) })}
+			<td></td>
+		{/each}
+		{#if hasMapPicks && showMapPicks}
+			{#each Array.from({ length: Math.round(maxMapPicks / 2) })}
+				<td></td>
+			{/each}
+		{/if}
 		{#if hasNotes}
 			<td>
 				{#if matchData.notes?.length}

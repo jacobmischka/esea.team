@@ -109,7 +109,34 @@
 	);
 
 	const hasNotes = $derived(matchesData.some((match) => Boolean(match.notes?.length)));
-	const hasMapPicks = $derived(matchesData.some((match) => Boolean(match.mapSummaries?.length)));
+
+	const maxMapPicks = $derived(
+		matchesData.reduce(
+			(max, match) =>
+				Math.max(
+					max,
+					(match.summary.mapChoices?.reduce(
+						(acc, choice) => (choice.choice === 'pick' ? acc + 1 : acc),
+						0
+					) ?? 1) - 1
+				),
+			0
+		)
+	);
+	const maxMapBans = $derived(
+		matchesData.reduce(
+			(max, match) =>
+				Math.max(
+					max,
+					match.summary.mapChoices?.reduce(
+						(acc, choice) => (choice.choice === 'drop' ? acc + 1 : acc),
+						0
+					) ?? 0
+				),
+			0
+		)
+	);
+	const hasMapPicks = $derived(maxMapPicks > 0);
 </script>
 
 <div class="table-controls">
@@ -143,13 +170,15 @@
 					<th>Team players</th>
 				{/if}
 				<th>Opponent</th>
-				<th>Ban 1</th>
-				<th>Ban 2</th>
-				<th>Ban 3</th>
+
+				{#each Array.from({ length: Math.ceil(maxMapBans / 2) }).map((_, i) => i) as i}
+					<th>Ban {i + 1}</th>
+				{/each}
 				{#if hasMapPicks && showMapPicks}
-					<th>Pick 1</th>
-					<th>Pick 2</th>
-					<th>Pick 3</th>
+					{#each Array.from({ length: Math.ceil(maxMapPicks / 2) }).map((_, i) => i) as i}
+						<th>Pick {i + 1}</th>
+					{/each}
+					<th>Decider</th>
 				{/if}
 				{#if hasNotes}
 					<th>Notes</th>
@@ -167,6 +196,8 @@
 						{hasNotes}
 						{showPlayers}
 						{showMapPicks}
+						{maxMapPicks}
+						{maxMapBans}
 					/>
 				{:else}
 					<TeamMatchRow
@@ -175,6 +206,8 @@
 						{hasNotes}
 						{showPlayers}
 						{showMapPicks}
+						{maxMapPicks}
+						{maxMapBans}
 					/>
 				{/each}
 			{/each}

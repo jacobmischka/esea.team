@@ -134,10 +134,9 @@ export const load: PageLoad = async ({ fetch, params, data }) => {
 							)
 							.map((entity) => mapsMap.get(entity.guid)?.name ?? entity.guid);
 						data.summary.teamMapPicks = mapTicket.entities
-							.filter(
-								(entity) =>
-									entity.status === 'pick' && entity.selected_by === teamFaction
-							)
+							.filter((entity) => entity.status === 'pick')
+							.slice(0, -1)
+							.filter((entity) => entity.selected_by === teamFaction)
 							.map((entity) => mapsMap.get(entity.guid)?.name ?? entity.guid);
 					}
 				}

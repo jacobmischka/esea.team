@@ -255,10 +255,8 @@
 				/>
 			</div>
 		{/if}
-	</section>
 
-	{#if showMapPicks}
-		<section class="charts">
+		{#if showMapPicks}
 			{#if pick1Counts.length > 0}
 				<div class="chart-container">
 					<span class="figure-heading">First picks</span>
@@ -294,8 +292,8 @@
 					/>
 				</div>
 			{/if}
-		</section>
-	{/if}
+		{/if}
+	</section>
 </section>
 
 <style>
