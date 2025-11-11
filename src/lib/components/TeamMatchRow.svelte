@@ -69,7 +69,15 @@
 				{#if mapSummary.teamPlayers?.length}
 					<ul class="player-list">
 						{#each mapSummary.teamPlayers as player}
-							<li>{player.nickname}</li>
+							<li>
+								<a
+									href="https://faceit.com/en/players/{player.nickname}"
+									target="_blank"
+									rel="noreferrer noopener"
+								>
+									{player.nickname}
+								</a>
+							</li>
 						{/each}
 					</ul>
 				{/if}
@@ -95,7 +103,15 @@
 			{#if showPlayers && mapSummary.opponentPlayers?.length}
 				<ul class="player-list">
 					{#each mapSummary.opponentPlayers as player}
-						<li>{player.nickname}</li>
+						<li>
+							<a
+								href="https://faceit.com/en/players/{player.nickname}"
+								target="_blank"
+								rel="noreferrer noopener"
+							>
+								{player.nickname}
+							</a>
+						</li>
 					{/each}
 				</ul>
 			{/if}
